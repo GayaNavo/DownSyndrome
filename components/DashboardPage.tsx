@@ -1,0 +1,344 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import DashboardSidebar from './DashboardSidebar'
+import DashboardHeader from './DashboardHeader'
+import { getChildrenByParent, ChildData } from '@/lib/firebase/firestore'
+
+export default function DashboardPage() {
+  const { currentUser } = useAuth()
+  const [children, setChildren] = useState<ChildData[]>([])
+  const [selectedChild, setSelectedChild] = useState<ChildData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (currentUser) {
+      getChildrenByParent(currentUser.uid)
+        .then((childrenData) => {
+          setChildren(childrenData)
+          if (childrenData.length > 0) {
+            setSelectedChild(childrenData[0])
+          }
+          setLoading(false)
+        })
+        .catch((error) => {
+          console.error('Error fetching children:', error)
+          setLoading(false)
+        })
+    } else {
+      setLoading(false)
+    }
+  }, [currentUser])
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <DashboardSidebar activePage="dashboard" />
+
+      {/* Main Content */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <DashboardHeader title="Dashboard" />
+
+        {/* Main Content Area */}
+        <main className="p-6">
+          {/* Child Overview Card */}
+          {loading ? (
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
+              <div className="text-center py-8">
+                <p className="text-blue-100">Loading...</p>
+              </div>
+            </div>
+          ) : selectedChild ? (
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  {/* Child Avatar */}
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                    <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="text-3xl font-bold">{selectedChild.name}</h2>
+                      <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                    <p className="text-blue-100 text-lg">Age: {selectedChild.age} years</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-12">
+                  {/* Developmental Age */}
+                  <div className="text-center">
+                    <p className="text-blue-200 text-sm mb-1">Developmental Age</p>
+                    <p className="text-2xl font-semibold">{selectedChild.developmentalAge || 'Not set'}</p>
+                  </div>
+
+                  {/* Last Milestone */}
+                  <div className="text-center">
+                    <p className="text-blue-200 text-sm mb-1">Last Milestone</p>
+                    <p className="text-2xl font-semibold">{selectedChild.lastMilestone || 'No milestones yet'}</p>
+                  </div>
+
+                  {/* Add New Entry Button */}
+                  <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md">
+                    + Add New Entry
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
+              <div className="text-center py-8">
+                <p className="text-blue-100 mb-4">No children registered yet.</p>
+                <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md">
+                  + Add Your First Child
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Access Section */}
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Quick Access</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Progress Monitoring Card */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="h-48 bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
+                  <div className="w-full px-6 py-4">
+                    <div className="flex items-end justify-between h-32 gap-2">
+                      {[10, 20, 30, 50, 70, 90].map((height, index) => (
+                        <div
+                          key={index}
+                          className="flex-1 bg-white rounded-t"
+                          style={{ height: `${height}%` }}
+                        >
+                          <div className="text-xs text-center text-white mt-1 font-semibold">
+                            {height}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Progress Monitoring</h4>
+                  <p className="text-gray-600 mb-4">
+                    View developmental charts and track milestones.
+                  </p>
+                  <a
+                    href="/dashboard/progress"
+                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
+                  >
+                    View Progress →
+                  </a>
+                </div>
+              </div>
+
+              {/* AI Detection Card */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="h-48 bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-20">
+                    <svg className="w-full h-full" viewBox="0 0 200 200">
+                      <circle cx="50" cy="50" r="3" fill="white" opacity="0.8">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx="150" cy="80" r="4" fill="white" opacity="0.6">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx="100" cy="150" r="3" fill="white" opacity="0.7">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" />
+                      </circle>
+                      <line x1="50" y1="50" x2="150" y2="80" stroke="white" strokeWidth="1" opacity="0.3" />
+                      <line x1="150" y1="80" x2="100" y2="150" stroke="white" strokeWidth="1" opacity="0.3" />
+                      <line x1="100" y1="150" x2="50" y2="50" stroke="white" strokeWidth="1" opacity="0.3" />
+                    </svg>
+                  </div>
+                  <div className="relative z-10 text-white text-center">
+                    <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </svg>
+                    <p className="text-sm font-semibold">AI Analysis</p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">AI Detection</h4>
+                  <p className="text-gray-600 mb-4">
+                    Analyze new media for developmental insights.
+                  </p>
+                  <a
+                    href="/dashboard/ai-detection"
+                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
+                  >
+                    Start Analysis →
+                  </a>
+                </div>
+              </div>
+
+              {/* Document Library Card */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="h-48 bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                  <div className="relative">
+                    <svg className="w-20 h-20 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M16 13H8" />
+                      <path d="M16 17H8" />
+                      <path d="M10 9H8" />
+                    </svg>
+                    <svg
+                      className="w-16 h-16 text-amber-500 absolute -top-2 -left-2"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Document Library</h4>
+                  <p className="text-gray-600 mb-4">
+                    Manage reports, therapy notes, and resources.
+                  </p>
+                  <a
+                    href="/dashboard/documents"
+                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
+                  >
+                    Open Library →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity and Upcoming Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Activity */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Recent Activity</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Milestone Achieved: Stacking two blocks</p>
+                    <p className="text-sm text-gray-500 mt-1">Yesterday, 3:45 PM</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">New document uploaded</p>
+                    <p className="text-sm text-gray-500 mt-1">2 days ago, 10:30 AM</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-purple-50 rounded-lg">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Progress report generated</p>
+                    <p className="text-sm text-gray-500 mt-1">3 days ago, 2:15 PM</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Upcoming */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Upcoming</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Speech Therapy Appointment</p>
+                    <p className="text-sm text-gray-500 mt-1">Tomorrow, 10:00 AM</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Developmental Assessment</p>
+                    <p className="text-sm text-gray-500 mt-1">Next Monday, 2:00 PM</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Follow-up with Dr. Smith</p>
+                    <p className="text-sm text-gray-500 mt-1">Next Friday, 11:30 AM</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  )
+}
+
