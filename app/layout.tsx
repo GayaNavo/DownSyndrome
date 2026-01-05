@@ -1,25 +1,26 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import Navigation from '../components/Navigation';
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { AuthProvider } from '@/contexts/AuthContext'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Down Syndrome Support App',
-  description: 'Application for supporting individuals with Down Syndrome',
-};
+  title: 'SyndromeTrack - Empowering Early Detection & Care',
+  description: 'Login to SyndromeTrack',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body>
-        <Navigation />
-        <div className="container mx-auto">
-          {children}
-        </div>
+      <body className={inter.className}>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
-  );
+  )
 }
+
