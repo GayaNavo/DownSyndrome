@@ -60,4 +60,6 @@ yarn dev
 ```bash
 npm run build
 npm start
+
+##Start
 ```
