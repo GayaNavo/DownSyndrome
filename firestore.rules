@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can read/write their own children
+    match /children/{childId} {
+      allow read, write: if request.auth != null && 
+        resource.data.parentId == request.auth.uid;
+    }
+    
+    // Users can read/write milestones for their children
+    match /milestones/{milestoneId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
+    }
+    
+    // Users can read/write progress for their children
+    match /progress/{progressId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
+    }
+    
+    // Users can read/write documents for their children
+    match /documents/{documentId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
+    }
+    
+    // Users can read/write appointments for their children
+    match /appointments/{appointmentId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
+    }
+  }
+}

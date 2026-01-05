@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import DashboardHeader from './DashboardHeader'
-import { getChildrenByParent, ChildData } from '@/lib/firebase/firestore'
-import { getMilestonesByChild, MilestoneData } from '@/lib/firebase/firestore'
+import { getChildrenByParent, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData } from '@/lib/firebase/firestore'
 
 export default function ProgressPage() {
   const { currentUser } = useAuth()
   const [children, setChildren] = useState<ChildData[]>([])
   const [selectedChild, setSelectedChild] = useState<ChildData | null>(null)
   const [milestones, setMilestones] = useState<MilestoneData[]>([])
+  const [healthData, setHealthData] = useState<HealthData[]>([])
   const [timePeriod, setTimePeriod] = useState<'7days' | '30days' | '6months' | 'alltime'>('30days')
   const [loading, setLoading] = useState(true)
 
@@ -22,9 +22,15 @@ export default function ProgressPage() {
           setChildren(childrenData)
           if (childrenData.length > 0) {
             setSelectedChild(childrenData[0])
-            // Fetch milestones for the first child
+            // Fetch milestones and health data for the first child
             if (childrenData[0].id) {
-              getMilestonesByChild(childrenData[0].id).then(setMilestones)
+              Promise.all([
+                getMilestonesByChild(childrenData[0].id),
+                getHealthDataByChild(childrenData[0].id)
+              ]).then(([milestonesData, healthData]) => {
+                setMilestones(milestonesData);
+                setHealthData(healthData);
+              });
             }
           }
           setLoading(false)
@@ -40,25 +46,81 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (selectedChild?.id) {
-      getMilestonesByChild(selectedChild.id).then(setMilestones)
+      Promise.all([
+        getMilestonesByChild(selectedChild.id),
+        getHealthDataByChild(selectedChild.id)
+      ]).then(([milestonesData, healthData]) => {
+        setMilestones(milestonesData);
+        setHealthData(healthData);
+      });
     }
   }, [selectedChild])
 
-  // Mock data for charts (replace with real data from Firestore)
-  const weightData = [9.8, 9.9, 10.0, 10.2]
-  const heightData = [73, 74, 74.5, 75]
-  const sleepData = [14.5, 14.2, 14.0, 13.8, 14.2, 14.5, 14.2]
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const weeks = ['W1', 'W2', 'W3', 'W4']
-
+  // Extract data from healthData
   const calculateChange = (current: number, previous: number): { value: number; isPositive: boolean } => {
     const change = ((current - previous) / previous) * 100
     return { value: Math.abs(change), isPositive: change >= 0 }
   }
 
-  const weightChange = calculateChange(weightData[weightData.length - 1], weightData[0])
-  const heightChange = calculateChange(heightData[heightData.length - 1], heightData[0])
-  const sleepChange = calculateChange(sleepData[sleepData.length - 1], sleepData[0])
+  // Filter health data based on time period
+  const filteredHealthData = healthData.filter(healthEntry => {
+    if (!healthEntry.date) return false;
+    
+    const entryDate = healthEntry.date.toDate();
+    const now = new Date();
+    
+    switch (timePeriod) {
+      case '7days':
+        return (now.getTime() - entryDate.getTime()) <= 7 * 24 * 60 * 60 * 1000;
+      case '30days':
+        return (now.getTime() - entryDate.getTime()) <= 30 * 24 * 60 * 60 * 1000;
+      case '6months':
+        return (now.getTime() - entryDate.getTime()) <= 6 * 30 * 24 * 60 * 60 * 1000;
+      default:
+        return true;
+    }
+  });
+
+  // Prepare chart data
+  const weightData = filteredHealthData
+    .filter(entry => entry.weight !== undefined)
+    .map(entry => entry.weight as number);
+  
+  const heightData = filteredHealthData
+    .filter(entry => entry.height !== undefined)
+    .map(entry => entry.height as number);
+  
+  const sleepData = filteredHealthData
+    .filter(entry => entry.sleepingHours !== undefined)
+    .map(entry => entry.sleepingHours as number);
+
+  // Prepare labels
+  const weightDates = filteredHealthData
+    .filter(entry => entry.weight !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  
+  const heightDates = filteredHealthData
+    .filter(entry => entry.height !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  
+  const sleepDates = filteredHealthData
+    .filter(entry => entry.sleepingHours !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+  // Calculate changes
+  const weightChange = weightData.length > 0 ? 
+    calculateChange(weightData[weightData.length - 1], weightData[0]) : { value: 0, isPositive: true };
+  
+  const heightChange = heightData.length > 0 ? 
+    calculateChange(heightData[heightData.length - 1], heightData[0]) : { value: 0, isPositive: true };
+  
+  const sleepChange = sleepData.length > 0 ? 
+    calculateChange(sleepData[sleepData.length - 1], sleepData[0]) : { value: 0, isPositive: true };
+
+  // Get latest values
+  const latestWeight = weightData.length > 0 ? weightData[weightData.length - 1] : null;
+  const latestHeight = heightData.length > 0 ? heightData[heightData.length - 1] : null;
+  const latestSleep = sleepData.length > 0 ? sleepData[sleepData.length - 1] : null;
 
   if (loading) {
     return (
@@ -141,14 +203,14 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">10.2 kg</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestWeight !== null && latestWeight !== undefined ? `${latestWeight} kg` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     weightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {weightChange.isPositive ? '+' : '-'}
-                  {weightChange.value.toFixed(1)}% in the last 30 days
+                  {weightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
               {/* Line Chart */}
@@ -166,8 +228,8 @@ export default function ProgressPage() {
                           style={{ height: `${Math.max(height, 10)}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-gray-500">{weeks[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value} kg</span>
+                      <span className="text-xs text-gray-500">{weightDates[index]}</span>
+                      <span className="text-xs text-gray-700 font-medium mt-1">{value !== null && value !== undefined ? `${value} kg` : ''}</span>
                     </div>
                   )
                 })}
@@ -178,14 +240,14 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Height</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">75 cm</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestHeight !== null && latestHeight !== undefined ? `${latestHeight} cm` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     heightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {heightChange.isPositive ? '+' : '-'}
-                  {heightChange.value.toFixed(1)}% in the last 30 days
+                  {heightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
               {/* Line Chart */}
@@ -203,8 +265,8 @@ export default function ProgressPage() {
                           style={{ height: `${Math.max(height, 10)}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-gray-500">{weeks[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value} cm</span>
+                      <span className="text-xs text-gray-500">{heightDates[index]}</span>
+                      <span className="text-xs text-gray-700 font-medium mt-1">{value !== null && value !== undefined ? `${value} cm` : ''}</span>
                     </div>
                   )
                 })}
@@ -215,14 +277,14 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Avg. Daily Sleep</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">14.2 hrs</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestSleep !== null && latestSleep !== undefined ? `${latestSleep.toFixed(1)} hrs` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {sleepChange.isPositive ? '+' : '-'}
-                  {sleepChange.value.toFixed(1)}% in the last 7 days
+                  {sleepChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
               {/* Bar Chart */}
@@ -240,8 +302,8 @@ export default function ProgressPage() {
                           style={{ height: `${Math.max(height, 10)}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-gray-500">{daysOfWeek[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value.toFixed(1)}h</span>
+                      <span className="text-xs text-gray-500">{sleepDates[index]}</span>
+                      <span className="text-xs text-gray-700 font-medium mt-1">{value !== null && value !== undefined ? `${value.toFixed(1)}h` : ''}</span>
                     </div>
                   )
                 })}
