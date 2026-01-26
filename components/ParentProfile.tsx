@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
-import DashboardHeader from './DashboardHeader';
+import AppHeader from './AppHeader';
 import { getUserDocument, updateUserDocument, UserData } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
@@ -84,13 +84,15 @@ export default function ParentProfile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar activePage="profile" />
-        <div className="flex-1 ml-64">
-          <DashboardHeader title="Profile" />
-          <div className="p-6">
-            <div className="bg-white rounded-xl shadow-md p-8 text-center">
-              <p className="text-gray-500">Loading profile...</p>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <AppHeader />
+        <div className="flex flex-1">
+          <DashboardSidebar activePage="profile" />
+          <div className="flex-1 ml-64">
+            <div className="p-6">
+              <div className="bg-white rounded-xl shadow-md p-8 text-center">
+                <p className="text-gray-500">Loading profile...</p>
+              </div>
             </div>
           </div>
         </div>
@@ -99,13 +101,14 @@ export default function ParentProfile() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar activePage="profile" />
-      
-      <div className="flex-1 ml-64">
-        <DashboardHeader title="Parent Profile" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        <DashboardSidebar activePage="profile" />
         
-        <main className="p-6">
+        <div className="flex-1 ml-64">
+          
+          <main className="p-6">
           {notification && (
             <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {notification.message}
@@ -275,5 +278,6 @@ export default function ParentProfile() {
         </main>
       </div>
     </div>
-  );
+  </div>
+);
 }

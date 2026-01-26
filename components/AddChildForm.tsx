@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
-import DashboardHeader from './DashboardHeader';
-import { createChildDocument, ChildData, getChildrenByParent } from '@/lib/firebase/firestore';
+import AppHeader from './AppHeader';
+import { createChildDocument, ChildData, getChildDocument } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
 interface FormData {
@@ -38,8 +38,8 @@ export default function AddChildForm() {
     if (!currentUser) return;
     
     try {
-      const children = await getChildrenByParent(currentUser.uid);
-      setHasChild(children.length > 0);
+      const child = await getChildDocument(currentUser.uid);
+      setHasChild(!!child);
     } catch (error) {
       console.error('Error checking if child exists:', error);
     }
@@ -124,13 +124,14 @@ export default function AddChildForm() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar activePage="children" />
-      
-      <div className="flex-1 ml-64">
-        <DashboardHeader title="Add New Child" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        <DashboardSidebar activePage="children" />
         
-        <main className="p-6">
+        <div className="flex-1 ml-64">
+          
+          <main className="p-6">
           {notification && (
             <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {notification.message}
@@ -293,5 +294,6 @@ export default function AddChildForm() {
         </main>
       </div>
     </div>
-  );
+  </div>
+);
 }

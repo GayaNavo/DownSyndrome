@@ -2,67 +2,15 @@
 
 import { useState } from 'react'
 import DashboardSidebar from './DashboardSidebar'
-import DashboardHeader from './DashboardHeader'
+import AppHeader from './AppHeader'
+import SDQTracker from './SDQTracker'
 
-interface SDQQuestion {
-  id: string
-  text: string
-  category: string
-}
 
-const sdqQuestions: SDQQuestion[] = [
-  // Emotional Symptoms
-  { id: 'e1', text: 'Often complains of headaches, stomach-aches or sickness.', category: 'emotional' },
-  { id: 'e2', text: 'Many worries or often seems worried.', category: 'emotional' },
-  { id: 'e3', text: 'Often unhappy, down-hearted or tearful.', category: 'emotional' },
-  { id: 'e4', text: 'Nervous or clingy in new situations, easily loses confidence.', category: 'emotional' },
-  { id: 'e5', text: 'Many fears, easily scared.', category: 'emotional' },
-  
-  // Conduct Problems
-  { id: 'c1', text: 'Often has temper tantrums or hot tempers.', category: 'conduct' },
-  { id: 'c2', text: 'Generally obedient, usually does what adults request.', category: 'conduct' },
-  { id: 'c3', text: 'Often fights with other children or bullies them.', category: 'conduct' },
-  { id: 'c4', text: 'Often lies or cheats.', category: 'conduct' },
-  { id: 'c5', text: 'Steals from home, school or elsewhere.', category: 'conduct' },
-  
-  // Hyperactivity
-  { id: 'h1', text: 'Restless, overactive, cannot stay still for long.', category: 'hyperactivity' },
-  { id: 'h2', text: 'Constantly fidgeting or squirming.', category: 'hyperactivity' },
-  { id: 'h3', text: 'Easily distracted, concentration wanders.', category: 'hyperactivity' },
-  { id: 'h4', text: 'Thinks things out before acting.', category: 'hyperactivity' },
-  { id: 'h5', text: 'Sees tasks through to the end, good attention span.', category: 'hyperactivity' },
-  
-  // Peer Problems
-  { id: 'p1', text: 'Rather solitary, tends to play alone.', category: 'peer' },
-  { id: 'p2', text: 'Has at least one good friend.', category: 'peer' },
-  { id: 'p3', text: 'Generally liked by other children.', category: 'peer' },
-  { id: 'p4', text: 'Picked on or bullied by other children.', category: 'peer' },
-  { id: 'p5', text: 'Gets along better with adults than with other children.', category: 'peer' },
-  
-  // Prosocial Behavior
-  { id: 's1', text: 'Considerate of other people\'s feelings.', category: 'prosocial' },
-  { id: 's2', text: 'Shares readily with other children.', category: 'prosocial' },
-  { id: 's3', text: 'Helpful if someone is hurt, upset or feeling ill.', category: 'prosocial' },
-  { id: 's4', text: 'Kind to younger children.', category: 'prosocial' },
-  { id: 's5', text: 'Often volunteers to help others.', category: 'prosocial' },
-]
 
 export default function AIDetectionPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [sdqAnswers, setSdqAnswers] = useState<Record<string, string>>({})
-  const [openCategory, setOpenCategory] = useState<string>('emotional')
-  const [likelihood, setLikelihood] = useState<number | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
-
-  const categories = [
-    { id: 'emotional', name: 'Emotional Symptoms', icon: '😔' },
-    { id: 'conduct', name: 'Conduct Problems', icon: '😠' },
-    { id: 'hyperactivity', name: 'Hyperactivity', icon: '⚡' },
-    { id: 'peer', name: 'Peer Problems', icon: '👥' },
-    { id: 'prosocial', name: 'Prosocial Behavior', icon: '❤️' },
-  ]
 
   const handleFileSelect = (file: File) => {
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
@@ -113,68 +61,44 @@ export default function AIDetectionPage() {
       return
     }
 
-    const answeredQuestions = Object.keys(sdqAnswers).length
-    const totalQuestions = sdqQuestions.length
-    if (answeredQuestions < totalQuestions) {
-      alert(`Please answer all ${totalQuestions} SDQ questions`)
-      return
-    }
-
-    setIsAnalyzing(true)
-    
-    // Simulate AI analysis (replace with actual API call)
-    setTimeout(() => {
-      // Calculate a mock likelihood based on answers
-      const scores: number[] = Object.values(sdqAnswers).map(answer => {
-        if (answer === 'certainly') return 2
-        if (answer === 'somewhat') return 1
-        return 0
-      })
-      const totalScore = scores.reduce((a, b) => a + b, 0)
-      const maxScore = totalQuestions * 2
-      const calculatedLikelihood = Math.round((totalScore / maxScore) * 100)
-      
-      setLikelihood(calculatedLikelihood)
-      setIsAnalyzing(false)
-    }, 2000)
-  }
-
-  const getCategoryQuestions = (categoryId: string) => {
-    return sdqQuestions.filter(q => q.category === categoryId)
+    // For now, just show a message since SDQ is handled by the separate component
+    alert('Facial image uploaded successfully! The SDQ assessment is available in the separate SDQ section.')
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <DashboardSidebar activePage="ai-detection" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <DashboardSidebar activePage="ai-detection" />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64 flex">
-        {/* Main Content Area */}
-        <div className="flex-1">
-          {/* Header */}
-          <DashboardHeader title="AI-Based Detection Module" />
-
-          {/* Main Content */}
-          <main className="p-6 max-w-4xl">
-            <div className="mb-6">
+        {/* Main Content */}
+        <div className="flex-1 ml-64 flex">
+          {/* Main Content Area */}
+          <div className="flex-1">
+            {/* Main Content */}
+            <main className="p-8 w-full">
+            <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">AI-Based Detection Module</h2>
               <p className="text-gray-600">
                 Upload a facial image and complete the SDQ for a preliminary likelihood assessment.
               </p>
             </div>
 
-            {/* Section 1: Upload Facial Image */}
-            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-                  1
+            <div className="grid grid-cols-1 gap-8">
+              {/* Section 1: Upload Facial Image */}
+              <div className="bg-white rounded-xl shadow-md p-8">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
+                    1
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Upload Facial Image</h3>
+                    <p className="text-gray-600 mt-1">
+                      The face should be clear, well-lit, and forward-facing.
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Upload Facial Image</h3>
-              </div>
-              <p className="text-gray-600 mb-4 ml-11">
-                The face should be clear, well-lit, and forward-facing.
-              </p>
               
               <div
                 className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
@@ -237,93 +161,34 @@ export default function AIDetectionPage() {
               </div>
             </div>
 
-            {/* Section 2: Complete the SDQ */}
-            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-                  2
+              {/* Section 2: Complete the SDQ */}
+              <div className="bg-white rounded-xl shadow-md p-8">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
+                    2
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Complete the SDQ</h3>
+                    <p className="text-sm text-gray-600 mt-1">The Strengths and Difficulties Questionnaire provides holistic insights.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Complete the SDQ</h3>
-                  <p className="text-sm text-gray-600">The Strengths and Difficulties Questionnaire provides holistic insights.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {categories.map((category) => {
-                  const questions = getCategoryQuestions(category.id)
-                  const isOpen = openCategory === category.id
-                  
-                  return (
-                    <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                      <button
-                        onClick={() => setOpenCategory(isOpen ? '' : category.id)}
-                        className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{category.icon}</span>
-                          <span className="font-semibold text-gray-900">{category.name}</span>
-                        </div>
-                        <svg
-                          className={`w-5 h-5 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      
-                      {isOpen && (
-                        <div className="p-4 space-y-4 bg-white">
-                          {questions.map((question, index) => (
-                            <div key={question.id} className="border-b border-gray-100 pb-4 last:border-0">
-                              <p className="text-gray-900 mb-3 font-medium">
-                                {index + 1}. {question.text}
-                              </p>
-                              <div className="flex gap-4">
-                                {['not', 'somewhat', 'certainly'].map((option) => (
-                                  <label
-                                    key={option}
-                                    className="flex items-center gap-2 cursor-pointer"
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={question.id}
-                                      value={option}
-                                      checked={sdqAnswers[question.id] === option}
-                                      onChange={(e) =>
-                                        setSdqAnswers({ ...sdqAnswers, [question.id]: e.target.value })
-                                      }
-                                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <span className="text-gray-700 capitalize">
-                                      {option === 'not' ? 'Not True' : option === 'somewhat' ? 'Somewhat True' : 'Certainly True'}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                
+                <SDQTracker />
               </div>
             </div>
 
             {/* Analyze Button */}
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              {isAnalyzing ? 'Analyzing...' : 'Analyze Data'}
-            </button>
+            <div className="mt-8">
+              <button
+                onClick={handleAnalyze}
+                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Analyze Data
+              </button>
+            </div>
           </main>
         </div>
 
@@ -341,49 +206,11 @@ export default function AIDetectionPage() {
             </div>
           </div>
 
-          {/* Likelihood Result */}
-          {likelihood !== null && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Likelihood Result</h3>
-              <p className="text-sm text-gray-600 mb-4">Based on the data provided.</p>
-              
-              <div className="relative w-48 h-48 mx-auto mb-4">
-                <svg className="transform -rotate-90 w-48 h-48">
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    stroke="#e5e7eb"
-                    strokeWidth="16"
-                    fill="none"
-                  />
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    stroke="#3b82f6"
-                    strokeWidth="16"
-                    fill="none"
-                    strokeDasharray={`${(likelihood / 100) * 552.92} 552.92`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-blue-600">{likelihood}%</div>
-                    <div className="text-sm text-gray-600">Likelihood</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-gray-900 mb-2">High Likelihood Indicated</h4>
-                <p className="text-sm text-gray-600">
-                  The analysis combines facial feature recognition with SDQ results to generate a preliminary score.
-                </p>
-              </div>
-            </div>
-          )}
+          {/* SDQ Results will be shown in the SDQTracker component */}
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">SDQ Assessment</h3>
+            <p className="text-sm text-gray-600 mb-4">Complete the behavioral assessment above to see detailed results.</p>
+          </div>
 
           {/* Disclaimer */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -427,6 +254,7 @@ export default function AIDetectionPage() {
         </div>
       </div>
     </div>
-  )
+  </div>
+)
 }
 

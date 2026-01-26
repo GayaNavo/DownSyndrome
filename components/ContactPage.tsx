@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Navigation from './Navigation'
+import AppHeader from './AppHeader'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -86,9 +86,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <Navigation />
-
+      <AppHeader />
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

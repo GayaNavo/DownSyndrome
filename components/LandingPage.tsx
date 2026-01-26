@@ -1,14 +1,12 @@
 'use client'
 
-import Navigation from './Navigation'
 import Logo from './Logo'
+import AppHeader from './AppHeader'
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <Navigation />
-
+      <AppHeader />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900">
         <div className="absolute inset-0 opacity-10">

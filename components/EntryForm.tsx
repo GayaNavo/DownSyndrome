@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
-import DashboardHeader from './DashboardHeader';
-import { getChildrenByParent, createMilestone, createProgressEntry, ChildData, createHealthDataEntry } from '@/lib/firebase/firestore';
+import AppHeader from './AppHeader';
+import { getChildDocument, createMilestone, createProgressEntry, ChildData, createHealthDataEntry } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
 interface FormData {
@@ -40,17 +40,19 @@ export default function EntryForm() {
     if (!currentUser) return;
     
     try {
-      const childrenData = await getChildrenByParent(currentUser.uid);
-      setChildren(childrenData);
-      if (childrenData.length > 0) {
+      const childData = await getChildDocument(currentUser.uid);
+      if (childData) {
+        setChildren([childData]);
         setFormData(prev => ({
           ...prev,
-          childId: childrenData[0].id || childrenData[0].id as string
+          childId: childData.id || currentUser.uid
         }));
+      } else {
+        setChildren([]);
       }
     } catch (error) {
-      console.error('Error fetching children:', error);
-      showNotification('error', 'Failed to load children');
+      console.error('Error fetching child:', error);
+      showNotification('error', 'Failed to load child information');
     } finally {
       setLoading(false);
     }
@@ -58,9 +60,13 @@ export default function EntryForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Numeric fields that should be converted to Number
+    const numericFields = ['weight', 'height', 'sleepingHours'];
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'score' ? (value ? Number(value) : undefined) : value
+      [name]: numericFields.includes(name) ? (value ? Number(value) : undefined) : value
     }));
   };
 
@@ -120,13 +126,15 @@ export default function EntryForm() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar activePage="entry" />
-        <div className="flex-1 ml-64">
-          <DashboardHeader title="Add New Entry" />
-          <div className="p-6">
-            <div className="bg-white rounded-xl shadow-md p-8 text-center">
-              <p className="text-gray-500">Loading...</p>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <AppHeader />
+        <div className="flex flex-1">
+          <DashboardSidebar activePage="entry" />
+          <div className="flex-1 ml-64">
+            <div className="p-6">
+              <div className="bg-white rounded-xl shadow-md p-8 text-center">
+                <p className="text-gray-500">Loading...</p>
+              </div>
             </div>
           </div>
         </div>
@@ -135,13 +143,14 @@ export default function EntryForm() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar activePage="entry" />
-      
-      <div className="flex-1 ml-64">
-        <DashboardHeader title="Add New Entry" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        <DashboardSidebar activePage="entry" />
         
-        <main className="p-6">
+        <div className="flex-1 ml-64">
+          
+          <main className="p-6">
           {notification && (
             <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {notification.message}
@@ -300,5 +309,6 @@ export default function EntryForm() {
         </main>
       </div>
     </div>
-  );
+  </div>
+);
 }

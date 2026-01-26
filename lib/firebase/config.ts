@@ -49,6 +49,17 @@ export const getAuthInstance = (): Auth => {
   return auth
 }
 
+// Helper function to get storage (throws error if called on server)
+export const getStorageInstance = (): FirebaseStorage => {
+  if (typeof window === 'undefined') {
+    throw new Error('Firebase Storage can only be used on the client side')
+  }
+  if (!storage) {
+    storage = getStorage(app)
+  }
+  return storage
+}
+
 export { app, analytics, auth, db, storage }
 export default app
 

@@ -1,6 +1,6 @@
 'use client'
 
-import Navigation from './Navigation'
+import AppHeader from './AppHeader'
 
 export default function FeaturesPage() {
   const features = [
@@ -176,9 +176,7 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <Navigation />
-
+      <AppHeader />
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

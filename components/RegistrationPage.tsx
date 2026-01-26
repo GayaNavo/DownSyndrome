@@ -2,8 +2,8 @@
 
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import Navigation from './Navigation'
 import Logo from './Logo'
+import AppHeader from './AppHeader'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegistrationPage() {
@@ -53,8 +53,10 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Decorative */}
+    <div className="min-h-screen flex flex-col">
+      <AppHeader />
+      <div className="flex flex-1">
+        {/* Left Panel - Decorative */}
       <div className="hidden lg:flex lg:w-1/3 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden rounded-r-3xl">
         {/* Wave Pattern Background */}
         <div className="absolute inset-0 opacity-20">
@@ -103,9 +105,6 @@ export default function RegistrationPage() {
 
       {/* Right Panel - Registration Form */}
       <div className="flex-1 lg:w-2/3 bg-white flex flex-col">
-        {/* Navigation */}
-        <Navigation />
-
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12 overflow-y-auto">
           <div className="w-full max-w-md">
@@ -438,6 +437,7 @@ export default function RegistrationPage() {
         </div>
       </div>
     </div>
-  )
+  </div>
+)
 }
 

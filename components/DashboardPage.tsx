@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
-import DashboardHeader from './DashboardHeader'
-import { getChildrenByParent, ChildData } from '@/lib/firebase/firestore'
+import AppHeader from './AppHeader'
+import { getChildDocument, ChildData } from '@/lib/firebase/firestore'
 
 export default function DashboardPage() {
   const { currentUser } = useAuth()
@@ -14,18 +14,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (currentUser) {
-      getChildrenByParent(currentUser.uid)
-        .then((childrenData) => {
-          console.log('Fetched children:', childrenData)
-          console.log('Number of children:', childrenData.length)
-          setChildren(childrenData)
-          if (childrenData.length > 0) {
-            setSelectedChild(childrenData[0])
+      getChildDocument(currentUser.uid)
+        .then((childData) => {
+          console.log('Fetched child:', childData)
+          if (childData) {
+            setChildren([childData])
+            setSelectedChild(childData)
+          } else {
+            setChildren([])
+            setSelectedChild(null)
           }
           setLoading(false)
         })
         .catch((error) => {
-          console.error('Error fetching children:', error)
+          console.error('Error fetching child:', error)
           console.log('Current user ID:', currentUser?.uid)
           setLoading(false)
         })
@@ -34,18 +36,17 @@ export default function DashboardPage() {
     }
   }, [currentUser])
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <DashboardSidebar activePage="dashboard" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <DashboardSidebar activePage="dashboard" />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <DashboardHeader title="Dashboard" />
-
-        {/* Main Content Area */}
-        <main className="p-6">
-          {/* Child Overview Card */}
+        {/* Main Content */}
+        <div className="flex-1 ml-64">
+          {/* Main Content Area */}
+          <main className="p-6">
+            {/* Child Overview Card */}
           {loading ? (
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
               <div className="text-center py-8">
@@ -318,6 +319,7 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  </div>
+)
 }
 
