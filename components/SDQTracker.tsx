@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, Ref } from 'react';
 
 const questions = [
   { id: 1, text: "My child is generally considerate of other people's feelings", category: "prosocial" },
@@ -78,11 +78,20 @@ interface Results {
   percentage: number;
 }
 
-export default function SDQTracker() {
+export interface SDQTrackerHandle {
+  getResults: () => Results | null;
+}
+
+const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerHandle>) => {
   const [answers, setAnswers] = useState<Answers>({});
   const [results, setResults] = useState<Results | null>(null);
   const [currentGroup, setCurrentGroup] = useState(0);
   const [expandedGroups, setExpandedGroups] = useState<number[]>([]);
+
+  // Expose getResults function to parent component
+  useImperativeHandle(ref, () => ({
+    getResults: () => results,
+  }));
 
   const handleOptionChange = (qId: number, value: number) => {
     setAnswers({ ...answers, [qId]: value });
@@ -120,7 +129,9 @@ export default function SDQTracker() {
     const totalDifficulty = scores.emotional + scores.conduct + scores.hyperactivity + scores.peer;
     const percentage = (totalDifficulty / 40) * 100;
 
-    setResults({ scores, totalDifficulty, percentage });
+    const calculatedResults = { scores, totalDifficulty, percentage };
+    setResults(calculatedResults);
+    return calculatedResults;
   };
 
   return (
@@ -264,8 +275,8 @@ export default function SDQTracker() {
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <h3 className="font-bold text-gray-800 mb-3 text-center text-sm">Detailed Category Breakdown</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { cat: 'emotional', label: 'Emotional Symptoms', color: 'text-red-600', bg: 'bg-red-50', icon: '😢' },
+                {[{
+                  cat: 'emotional', label: 'Emotional Symptoms', color: 'text-red-600', bg: 'bg-red-50', icon: '😢' },
                   { cat: 'conduct', label: 'Conduct Problems', color: 'text-orange-600', bg: 'bg-orange-50', icon: '😠' },
                   { cat: 'hyperactivity', label: 'Hyperactivity/Inattention', color: 'text-yellow-600', bg: 'bg-yellow-50', icon: '⚡' },
                   { cat: 'peer', label: 'Peer Relationship Issues', color: 'text-purple-600', bg: 'bg-purple-50', icon: '👥' }
@@ -313,3 +324,7 @@ export default function SDQTracker() {
     </div>
   );
 }
+
+export default SDQTracker;
+
+

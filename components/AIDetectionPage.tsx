@@ -1,9 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
-import SDQTracker from './SDQTracker'
+import AnalysisResultsHistory from './AnalysisResultsHistory'
+import SDQTracker, { type SDQTrackerHandle } from './SDQTracker'
+import { useAuth } from '@/contexts/AuthContext'
+import { getChildrenByParent } from '@/lib/firebase/firestore'
+import { createAnalysisResult } from '@/services/analysisResultService'
+import { AnalysisResultModel } from '@/models/AnalysisResult'
 
 
 
@@ -11,6 +16,9 @@ export default function AIDetectionPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [analysisResults, setAnalysisResults] = useState<any>(null)
+  const { currentUser: user } = useAuth()
+  const sdqTrackerRef = useRef<any>(null)
 
   const handleFileSelect = (file: File) => {
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
@@ -56,13 +64,48 @@ export default function AIDetectionPage() {
   }
 
   const handleAnalyze = async () => {
-    if (!uploadedImage) {
-      alert('Please upload a facial image first')
+    if (!user) {
+      alert('Please sign in to save analysis results')
       return
     }
 
-    // For now, just show a message since SDQ is handled by the separate component
-    alert('Facial image uploaded successfully! The SDQ assessment is available in the separate SDQ section.')
+    // Get the current user's child
+    const children = await getChildrenByParent(user.uid)
+    if (children.length === 0) {
+      alert('Please add a child to your profile first')
+      return
+    }
+    const childId = children[0].id
+
+    // Get SDQ results from the tracker
+    const sdqResults = sdqTrackerRef.current?.getResults ? sdqTrackerRef.current.getResults() : null
+    
+    if (!sdqResults) {
+      alert('Please complete the SDQ assessment first')
+      return
+    }
+
+    // Prepare analysis result data
+    const analysisData = {
+      childId: childId!, // Ensure childId is a string
+      facialImageData: imagePreview || undefined, // Save image preview as base64 if available
+      sdqScores: sdqResults.scores,
+      totalDifficulty: sdqResults.totalDifficulty,
+      percentage: sdqResults.percentage,
+      interpretation: AnalysisResultModel.calculateInterpretation(sdqResults.percentage),
+      analysisType: imagePreview ? 'combined' as const : 'sdq' as const, // If image is present, it's combined; otherwise just SDQ
+      notes: 'Automated analysis based on SDQ assessment'
+    }
+
+    try {
+      // Save to Firestore
+      await createAnalysisResult(analysisData)
+      alert('Analysis results saved to history successfully!')
+      setAnalysisResults(sdqResults) // Store locally to show results
+    } catch (error) {
+      console.error('Error saving analysis result:', error)
+      alert('Failed to save analysis results. Please try again.')
+    }
   }
 
   return (
@@ -170,7 +213,7 @@ export default function AIDetectionPage() {
                   </div>
                 </div>
                 
-                <SDQTracker />
+                <SDQTracker ref={sdqTrackerRef} />
               </div>
             </div>
 
@@ -185,6 +228,11 @@ export default function AIDetectionPage() {
                 </svg>
                 Analyze Data
               </button>
+            </div>
+
+            {/* Analysis Results History */}
+            <div className="mt-12">
+              <AnalysisResultsHistory />
             </div>
           </main>
         </div>
