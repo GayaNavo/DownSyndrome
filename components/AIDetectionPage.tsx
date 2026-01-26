@@ -73,11 +73,8 @@ export default function AIDetectionPage() {
         <DashboardSidebar activePage="ai-detection" />
 
         {/* Main Content */}
-        <div className="flex-1 ml-64 flex">
-          {/* Main Content Area */}
-          <div className="flex-1">
-            {/* Main Content */}
-            <main className="p-8 w-full">
+        <div className="flex-1 ml-64">
+          <main className="p-8 w-full">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">AI-Based Detection Module</h2>
               <p className="text-gray-600">
@@ -191,70 +188,8 @@ export default function AIDetectionPage() {
             </div>
           </main>
         </div>
-
-        {/* Right Sidebar - Results */}
-        <div className="w-80 bg-white border-l border-gray-200 p-6">
-          {/* User Profile */}
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Dr. Aliyah Hayes</p>
-            </div>
-          </div>
-
-          {/* SDQ Results will be shown in the SDQTracker component */}
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">SDQ Assessment</h3>
-            <p className="text-sm text-gray-600 mb-4">Complete the behavioral assessment above to see detailed results.</p>
-          </div>
-
-          {/* Disclaimer */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-1">Important Disclaimer</h4>
-                <p className="text-sm text-gray-700">
-                  This is a preliminary screening tool, not a medical diagnosis. Please consult a qualified healthcare professional for accurate guidance and diagnosis.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <a 
-              href="/dashboard/entry"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 inline-block"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-              Add New Entry
-            </a>
-            <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Consult a Professional
-            </button>
-            <button className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Download Full Report
-            </button>
-          </div>
-        </div>
       </div>
     </div>
-  </div>
-)
+  )
 }
 
