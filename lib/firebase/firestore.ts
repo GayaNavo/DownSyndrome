@@ -21,6 +21,7 @@ export const COLLECTIONS = {
   PROGRESS: 'progress',
   DOCUMENTS: 'documents',
   APPOINTMENTS: 'appointments',
+  HEALTH_DATA: 'health_data',
 } as const
 
 // User data structure
@@ -74,9 +75,11 @@ export interface DocumentData {
   id?: string
   childId: string
   title: string
-  type: 'report' | 'therapy_note' | 'assessment' | 'other'
+  type: string
+  category: 'all' | 'medical_reports' | 'therapy_notes' | 'genetics' | 'iep_school' | 'other'
   fileUrl: string
   fileName: string
+  fileSize?: string
   uploadedAt: Timestamp
   createdAt: Timestamp
 }
@@ -92,6 +95,18 @@ export interface AppointmentData {
   type: 'therapy' | 'assessment' | 'follow_up' | 'other'
   createdAt: Timestamp
   updatedAt: Timestamp
+}
+
+// Health data structure
+export interface HealthData {
+  id?: string
+  childId: string
+  weight?: number
+  height?: number
+  sleepingHours?: number
+  date: Timestamp
+  notes?: string
+  createdAt: Timestamp
 }
 
 // ============ USER OPERATIONS ============
@@ -155,6 +170,7 @@ export const updateUserDocument = async (uid: string, updates: Partial<UserData>
 
 /**
  * Create a new child document
+ * Uses parentId as document ID to enforce one child per user
  */
 export const createChildDocument = async (childData: Omit<ChildData, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   if (typeof window === 'undefined') {
@@ -162,16 +178,16 @@ export const createChildDocument = async (childData: Omit<ChildData, 'id' | 'cre
   }
 
   const database = ensureDb()
-  const childrenRef = collection(database, COLLECTIONS.CHILDREN)
+  const childRef = doc(database, COLLECTIONS.CHILDREN, childData.parentId)
   const now = Timestamp.now()
   
-  const docRef = await addDoc(childrenRef, {
+  await setDoc(childRef, {
     ...childData,
     createdAt: now,
     updatedAt: now,
   })
   
-  return docRef.id
+  return childData.parentId
 }
 
 /**
@@ -338,6 +354,48 @@ export const getDocumentsByChild = async (childId: string): Promise<DocumentData
   } as DocumentData))
 }
 
+/**
+ * Get a single document by ID
+ */
+export const getDocumentById = async (documentId: string): Promise<DocumentData | null> => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const database = ensureDb()
+  const documentRef = doc(database, COLLECTIONS.DOCUMENTS, documentId)
+  const documentSnap = await getDoc(documentRef)
+  
+  if (documentSnap.exists()) {
+    return { id: documentSnap.id, ...documentSnap.data() } as DocumentData
+  }
+  return null
+}
+
+/**
+ * Update document entry
+ */
+export const updateDocumentEntry = async (documentId: string, updates: Partial<DocumentData>): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const documentRef = doc(ensureDb(), COLLECTIONS.DOCUMENTS, documentId)
+  await updateDoc(documentRef, updates)
+}
+
+/**
+ * Delete document entry
+ */
+export const deleteDocumentEntry = async (documentId: string): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const documentRef = doc(ensureDb(), COLLECTIONS.DOCUMENTS, documentId)
+  await deleteDoc(documentRef)
+}
+
 // ============ APPOINTMENT OPERATIONS ============
 
 /**
@@ -402,5 +460,58 @@ export const deleteAppointment = async (appointmentId: string): Promise<void> =>
 
   const appointmentRef = doc(ensureDb(), COLLECTIONS.APPOINTMENTS, appointmentId)
   await deleteDoc(appointmentRef)
+}
+
+// ============ HEALTH DATA OPERATIONS ============
+
+/**
+ * Create a new health data entry
+ */
+export const createHealthDataEntry = async (healthData: Omit<HealthData, 'id' | 'createdAt'>): Promise<string> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const healthDataRef = collection(ensureDb(), COLLECTIONS.HEALTH_DATA)
+  const docRef = await addDoc(healthDataRef, {
+    ...healthData,
+    createdAt: Timestamp.now(),
+  })
+  
+  return docRef.id
+}
+
+/**
+ * Get health data entries for a child
+ */
+export const getHealthDataByChild = async (childId: string): Promise<HealthData[]> => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const healthDataRef = collection(ensureDb(), COLLECTIONS.HEALTH_DATA)
+  const q = query(healthDataRef, where('childId', '==', childId))
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  } as HealthData))
+}
+
+/**
+ * Update health data entry
+ */
+export const updateHealthDataEntry = async (healthDataId: string, updates: Partial<HealthData>): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const database = ensureDb()
+  const healthDataRef = doc(database, COLLECTIONS.HEALTH_DATA, healthDataId)
+  await updateDoc(healthDataRef, {
+    ...updates,
+    updatedAt: Timestamp.now(),
+  })
 }
 

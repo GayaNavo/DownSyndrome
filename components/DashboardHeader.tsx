@@ -19,7 +19,44 @@ export default function DashboardHeader({ title = 'Dashboard' }: { title?: strin
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+      <div className="flex items-center gap-8">
+        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        
+        <nav className="hidden lg:flex items-center gap-1 bg-gray-50 p-1 rounded-xl border border-gray-100">
+          <a 
+            href="/dashboard" 
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              title === 'Dashboard' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Dashboard
+          </a>
+          <a 
+            href="/dashboard/documents" 
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              title === 'Document Library' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Document Library
+          </a>
+          <a 
+            href="/dashboard/milestones" 
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              title === 'Milestones' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Milestones
+          </a>
+          <a 
+            href="/dashboard/appointments" 
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              title === 'Appointments' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Appointments
+          </a>
+        </nav>
+      </div>
       <div className="flex items-center gap-4">
         {/* Notifications */}
         <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">

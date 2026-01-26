@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Basic auth check
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper to check if user owns the child document
+    function isParentOfChild(childId, childData) {
+      return isSignedIn() && (childId == request.auth.uid || childData.parentId == request.auth.uid);
+    }
+
+    // Helper to check if user owns the related data (milestones, etc)
+    function ownsData(data) {
+      return isSignedIn() && (data.childId == request.auth.uid || 
+        get(/databases/$(database)/documents/children/$(data.childId)).data.parentId == request.auth.uid);
+    }
+
+    // Users can read/write their own user document
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Users can read/write their own children
+    match /children/{childId} {
+      allow read, update, delete: if isParentOfChild(childId, resource.data);
+      allow create: if isParentOfChild(childId, request.resource.data);
+    }
+    
+    // Milestones
+    match /milestones/{id} {
+      allow read: if ownsData(resource.data);
+      allow create: if ownsData(request.resource.data);
+      allow update, delete: if ownsData(resource.data);
+    }
+    
+    // Progress
+    match /progress/{id} {
+      allow read: if ownsData(resource.data);
+      allow create: if ownsData(request.resource.data);
+      allow update, delete: if ownsData(resource.data);
+    }
+    
+    // Documents
+    match /documents/{id} {
+      allow read: if ownsData(resource.data);
+      allow create: if ownsData(request.resource.data);
+      allow update, delete: if ownsData(resource.data);
+    }
+    
+    // Appointments
+    match /appointments/{id} {
+      allow read: if ownsData(resource.data);
+      allow create: if ownsData(request.resource.data);
+      allow update, delete: if ownsData(resource.data);
+    }
+
+    // Health Data
+    match /health_data/{id} {
+      allow read: if ownsData(resource.data);
+      allow create: if ownsData(request.resource.data);
+      allow update, delete: if ownsData(resource.data);
+    }
+  }
+}

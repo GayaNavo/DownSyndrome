@@ -3,34 +3,43 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
-import DashboardHeader from './DashboardHeader'
-import { getChildrenByParent, ChildData } from '@/lib/firebase/firestore'
-import { getMilestonesByChild, MilestoneData } from '@/lib/firebase/firestore'
+import AppHeader from './AppHeader'
+import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData } from '@/lib/firebase/firestore'
 
 export default function ProgressPage() {
   const { currentUser } = useAuth()
   const [children, setChildren] = useState<ChildData[]>([])
   const [selectedChild, setSelectedChild] = useState<ChildData | null>(null)
   const [milestones, setMilestones] = useState<MilestoneData[]>([])
+  const [healthData, setHealthData] = useState<HealthData[]>([])
   const [timePeriod, setTimePeriod] = useState<'7days' | '30days' | '6months' | 'alltime'>('30days')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (currentUser) {
-      getChildrenByParent(currentUser.uid)
-        .then((childrenData) => {
-          setChildren(childrenData)
-          if (childrenData.length > 0) {
-            setSelectedChild(childrenData[0])
-            // Fetch milestones for the first child
-            if (childrenData[0].id) {
-              getMilestonesByChild(childrenData[0].id).then(setMilestones)
-            }
+      setLoading(true)
+      getChildDocument(currentUser.uid)
+        .then((childData: ChildData | null) => {
+          if (childData) {
+            setChildren([childData])
+            setSelectedChild(childData)
+            // Fetch milestones and health data
+            const childId = childData.id || currentUser.uid
+            Promise.all([
+              getMilestonesByChild(childId),
+              getHealthDataByChild(childId)
+            ]).then(([milestonesData, healthData]) => {
+              setMilestones(milestonesData);
+              setHealthData(healthData);
+            });
+          } else {
+            setChildren([])
+            setSelectedChild(null)
           }
           setLoading(false)
         })
-        .catch((error) => {
-          console.error('Error fetching children:', error)
+        .catch((error: any) => {
+          console.error('Error fetching child:', error)
           setLoading(false)
         })
     } else {
@@ -40,37 +49,95 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (selectedChild?.id) {
-      getMilestonesByChild(selectedChild.id).then(setMilestones)
+      Promise.all([
+        getMilestonesByChild(selectedChild.id),
+        getHealthDataByChild(selectedChild.id)
+      ]).then(([milestonesData, healthData]) => {
+        setMilestones(milestonesData);
+        setHealthData(healthData);
+      });
     }
   }, [selectedChild])
 
-  // Mock data for charts (replace with real data from Firestore)
-  const weightData = [9.8, 9.9, 10.0, 10.2]
-  const heightData = [73, 74, 74.5, 75]
-  const sleepData = [14.5, 14.2, 14.0, 13.8, 14.2, 14.5, 14.2]
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const weeks = ['W1', 'W2', 'W3', 'W4']
-
+  // Extract data from healthData
   const calculateChange = (current: number, previous: number): { value: number; isPositive: boolean } => {
     const change = ((current - previous) / previous) * 100
     return { value: Math.abs(change), isPositive: change >= 0 }
   }
 
-  const weightChange = calculateChange(weightData[weightData.length - 1], weightData[0])
-  const heightChange = calculateChange(heightData[heightData.length - 1], heightData[0])
-  const sleepChange = calculateChange(sleepData[sleepData.length - 1], sleepData[0])
+  // Filter health data based on time period
+  const filteredHealthData = healthData.filter(healthEntry => {
+    if (!healthEntry.date) return false;
+    
+    const entryDate = healthEntry.date.toDate();
+    const now = new Date();
+    
+    switch (timePeriod) {
+      case '7days':
+        return (now.getTime() - entryDate.getTime()) <= 7 * 24 * 60 * 60 * 1000;
+      case '30days':
+        return (now.getTime() - entryDate.getTime()) <= 30 * 24 * 60 * 60 * 1000;
+      case '6months':
+        return (now.getTime() - entryDate.getTime()) <= 6 * 30 * 24 * 60 * 60 * 1000;
+      default:
+        return true;
+    }
+  });
+
+  // Prepare chart data
+  const weightData = filteredHealthData
+    .filter(entry => entry.weight !== undefined)
+    .map(entry => Number(entry.weight));
+  
+  const heightData = filteredHealthData
+    .filter(entry => entry.height !== undefined)
+    .map(entry => Number(entry.height));
+  
+  const sleepData = filteredHealthData
+    .filter(entry => entry.sleepingHours !== undefined)
+    .map(entry => Number(entry.sleepingHours));
+
+  // Prepare labels
+  const weightDates = filteredHealthData
+    .filter(entry => entry.weight !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  
+  const heightDates = filteredHealthData
+    .filter(entry => entry.height !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  
+  const sleepDates = filteredHealthData
+    .filter(entry => entry.sleepingHours !== undefined)
+    .map(entry => entry.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+  // Calculate changes
+  const weightChange = weightData.length > 0 ? 
+    calculateChange(weightData[weightData.length - 1], weightData[0]) : { value: 0, isPositive: true };
+  
+  const heightChange = heightData.length > 0 ? 
+    calculateChange(heightData[heightData.length - 1], heightData[0]) : { value: 0, isPositive: true };
+  
+  const sleepChange = sleepData.length > 0 ? 
+    calculateChange(sleepData[sleepData.length - 1], sleepData[0]) : { value: 0, isPositive: true };
+
+  // Get latest values
+  const latestWeight = weightData.length > 0 ? weightData[weightData.length - 1] : null;
+  const latestHeight = heightData.length > 0 ? heightData[heightData.length - 1] : null;
+  const latestSleep = sleepData.length > 0 ? sleepData[sleepData.length - 1] : null;
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar activePage="progress" />
-        <div className="flex-1 ml-64">
-          <DashboardHeader title="Progress" />
-          <main className="p-6">
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading...</p>
-            </div>
-          </main>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <AppHeader />
+        <div className="flex flex-1">
+          <DashboardSidebar activePage="progress" />
+          <div className="flex-1 ml-64">
+            <main className="p-6">
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading...</p>
+              </div>
+            </main>
+          </div>
         </div>
       </div>
     )
@@ -78,35 +145,36 @@ export default function ProgressPage() {
 
   if (!selectedChild) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar activePage="progress" />
-        <div className="flex-1 ml-64">
-          <DashboardHeader title="Progress" />
-          <main className="p-6">
-            <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">No children registered yet.</p>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                + Add Your First Child
-              </button>
-            </div>
-          </main>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <AppHeader />
+        <div className="flex flex-1">
+          <DashboardSidebar activePage="progress" />
+          <div className="flex-1 ml-64">
+            <main className="p-6">
+              <div className="text-center py-12">
+                <p className="text-gray-600 mb-4">No children registered yet.</p>
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                  + Add Your First Child
+                </button>
+              </div>
+            </main>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <DashboardSidebar activePage="progress" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <DashboardSidebar activePage="progress" />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <DashboardHeader title={`${selectedChild.name}'s Dashboard`} />
-
-        {/* Main Content Area */}
-        <main className="p-6">
+        {/* Main Content */}
+        <div className="flex-1 ml-64">
+          {/* Main Content Area */}
+          <main className="p-6">
           {/* Title and Time Period Selector */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -141,36 +209,93 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">10.2 kg</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestWeight !== null && latestWeight !== undefined ? `${Number(latestWeight).toFixed(1)} kg` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     weightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {weightChange.isPositive ? '+' : '-'}
-                  {weightChange.value.toFixed(1)}% in the last 30 days
+                  {weightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
-              {/* Line Chart */}
-              <div className="h-32 flex items-end justify-between gap-2">
-                {weightData.map((value, index) => {
-                  const maxValue = Math.max(...weightData)
-                  const minValue = Math.min(...weightData)
-                  const range = maxValue - minValue || 1
-                  const height = ((value - minValue) / range) * 100
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div className="w-full flex items-end justify-center mb-1">
-                        <div
-                          className="w-full bg-blue-600 rounded-t"
-                          style={{ height: `${Math.max(height, 10)}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500">{weeks[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value} kg</span>
-                    </div>
-                  )
-                })}
+              {/* Weight Line Chart */}
+              <div className="h-48 mt-4 relative overflow-hidden">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between py-2 text-xs text-gray-500 w-10">
+                  {Array.from({length: 5}).map((_, i) => {
+                    const maxValue = weightData.length > 0 ? Math.max(...weightData) : 10;
+                    const minValue = weightData.length > 0 ? Math.min(...weightData) : 0;
+                    const range = maxValue - minValue || 1;
+                    const value = minValue + (range * (4-i) / 4);
+                    return (
+                      <span key={i} className="pr-1">
+                        {value.toFixed(1)}
+                      </span>
+                    );
+                  })}
+                </div>
+                
+                {/* Chart area */}
+                <div className="ml-10 mr-2 h-full relative">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pt-2 pb-6">
+                    {Array.from({length: 5}).map((_, i) => (
+                      <div key={i} className="border-t border-gray-100"></div>
+                    ))}
+                  </div>
+                  
+                  {/* Line graph */}
+                  <div className="absolute inset-0 pt-2 pb-6 pl-2 pr-2">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {/* Data line */}
+                      {weightData.length > 1 && (
+                        <polyline
+                          fill="none"
+                          stroke="#3b82f6"
+                          strokeWidth="2"
+                          points={weightData.map((value, index) => {
+                            const maxValue = Math.max(...weightData);
+                            const minValue = Math.min(...weightData);
+                            const range = maxValue - minValue || 1;
+                            const x = (index / (weightData.length - 1)) * 100;
+                            const y = 100 - (((value - minValue) / range) * 100);
+                            return `${x},${y}`;
+                          }).join(' ')}
+                        />
+                      )}
+                      
+                      {/* Data points */}
+                      {weightData.map((value, index) => {
+                        const maxValue = Math.max(...weightData);
+                        const minValue = Math.min(...weightData);
+                        const range = maxValue - minValue || 1;
+                        const x = (index / (weightData.length - 1)) * 100;
+                        const y = 100 - (((value - minValue) / range) * 100);
+                        return (
+                          <circle
+                            key={index}
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#3b82f6"
+                            stroke="#fff"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+                    </svg>
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div className="absolute bottom-0 left-2 right-2 flex justify-between text-xs text-gray-500 pb-1">
+                    {weightDates.map((date, index) => (
+                      <span key={index} className="text-center" style={{ width: `${100/weightDates.length}%` }}>
+                        {date}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -178,36 +303,93 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Height</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">75 cm</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestHeight !== null && latestHeight !== undefined ? `${Number(latestHeight).toFixed(1)} cm` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     heightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {heightChange.isPositive ? '+' : '-'}
-                  {heightChange.value.toFixed(1)}% in the last 30 days
+                  {heightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
-              {/* Line Chart */}
-              <div className="h-32 flex items-end justify-between gap-2">
-                {heightData.map((value, index) => {
-                  const maxValue = Math.max(...heightData)
-                  const minValue = Math.min(...heightData)
-                  const range = maxValue - minValue || 1
-                  const height = ((value - minValue) / range) * 100
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div className="w-full flex items-end justify-center mb-1">
-                        <div
-                          className="w-full bg-blue-600 rounded-t"
-                          style={{ height: `${Math.max(height, 10)}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500">{weeks[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value} cm</span>
-                    </div>
-                  )
-                })}
+              {/* Height Line Chart */}
+              <div className="h-48 mt-4 relative overflow-hidden">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between py-2 text-xs text-gray-500 w-10">
+                  {Array.from({length: 5}).map((_, i) => {
+                    const maxValue = heightData.length > 0 ? Math.max(...heightData) : 100;
+                    const minValue = heightData.length > 0 ? Math.min(...heightData) : 0;
+                    const range = maxValue - minValue || 1;
+                    const value = minValue + (range * (4-i) / 4);
+                    return (
+                      <span key={i} className="pr-1">
+                        {value.toFixed(1)}
+                      </span>
+                    );
+                  })}
+                </div>
+                
+                {/* Chart area */}
+                <div className="ml-10 mr-2 h-full relative">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pt-2 pb-6">
+                    {Array.from({length: 5}).map((_, i) => (
+                      <div key={i} className="border-t border-gray-100"></div>
+                    ))}
+                  </div>
+                  
+                  {/* Line graph */}
+                  <div className="absolute inset-0 pt-2 pb-6 pl-2 pr-2">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {/* Data line */}
+                      {heightData.length > 1 && (
+                        <polyline
+                          fill="none"
+                          stroke="#10b981"
+                          strokeWidth="2"
+                          points={heightData.map((value, index) => {
+                            const maxValue = Math.max(...heightData);
+                            const minValue = Math.min(...heightData);
+                            const range = maxValue - minValue || 1;
+                            const x = (index / (heightData.length - 1)) * 100;
+                            const y = 100 - (((value - minValue) / range) * 100);
+                            return `${x},${y}`;
+                          }).join(' ')}
+                        />
+                      )}
+                      
+                      {/* Data points */}
+                      {heightData.map((value, index) => {
+                        const maxValue = Math.max(...heightData);
+                        const minValue = Math.min(...heightData);
+                        const range = maxValue - minValue || 1;
+                        const x = (index / (heightData.length - 1)) * 100;
+                        const y = 100 - (((value - minValue) / range) * 100);
+                        return (
+                          <circle
+                            key={index}
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#10b981"
+                            stroke="#fff"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+                    </svg>
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div className="absolute bottom-0 left-2 right-2 flex justify-between text-xs text-gray-500 pb-1">
+                    {heightDates.map((date, index) => (
+                      <span key={index} className="text-center" style={{ width: `${100/heightDates.length}%` }}>
+                        {date}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -215,36 +397,93 @@ export default function ProgressPage() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Avg. Daily Sleep</h3>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">14.2 hrs</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{latestSleep !== null && latestSleep !== undefined ? `${Number(latestSleep).toFixed(1)} hrs` : 'No data'}</p>
                 <p
                   className={`text-sm font-medium ${
                     sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
                   {sleepChange.isPositive ? '+' : '-'}
-                  {sleepChange.value.toFixed(1)}% in the last 7 days
+                  {sleepChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
-              {/* Bar Chart */}
-              <div className="h-32 flex items-end justify-between gap-1">
-                {sleepData.map((value, index) => {
-                  const maxValue = Math.max(...sleepData)
-                  const minValue = Math.min(...sleepData)
-                  const range = maxValue - minValue || 1
-                  const height = ((value - minValue) / range) * 100
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div className="w-full flex items-end justify-center mb-1">
-                        <div
-                          className="w-full bg-blue-600 rounded-t"
-                          style={{ height: `${Math.max(height, 10)}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500">{daysOfWeek[index]}</span>
-                      <span className="text-xs text-gray-700 font-medium mt-1">{value.toFixed(1)}h</span>
-                    </div>
-                  )
-                })}
+              {/* Sleep Line Chart */}
+              <div className="h-48 mt-4 relative overflow-hidden">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between py-2 text-xs text-gray-500 w-10">
+                  {Array.from({length: 5}).map((_, i) => {
+                    const maxValue = sleepData.length > 0 ? Math.max(...sleepData) : 12;
+                    const minValue = sleepData.length > 0 ? Math.min(...sleepData) : 0;
+                    const range = maxValue - minValue || 1;
+                    const value = minValue + (range * (4-i) / 4);
+                    return (
+                      <span key={i} className="pr-1">
+                        {value.toFixed(1)}
+                      </span>
+                    );
+                  })}
+                </div>
+                
+                {/* Chart area */}
+                <div className="ml-10 mr-2 h-full relative">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pt-2 pb-6">
+                    {Array.from({length: 5}).map((_, i) => (
+                      <div key={i} className="border-t border-gray-100"></div>
+                    ))}
+                  </div>
+                  
+                  {/* Line graph */}
+                  <div className="absolute inset-0 pt-2 pb-6 pl-2 pr-2">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {/* Data line */}
+                      {sleepData.length > 1 && (
+                        <polyline
+                          fill="none"
+                          stroke="#8b5cf6"
+                          strokeWidth="2"
+                          points={sleepData.map((value, index) => {
+                            const maxValue = Math.max(...sleepData);
+                            const minValue = Math.min(...sleepData);
+                            const range = maxValue - minValue || 1;
+                            const x = (index / (sleepData.length - 1)) * 100;
+                            const y = 100 - (((value - minValue) / range) * 100);
+                            return `${x},${y}`;
+                          }).join(' ')}
+                        />
+                      )}
+                      
+                      {/* Data points */}
+                      {sleepData.map((value, index) => {
+                        const maxValue = Math.max(...sleepData);
+                        const minValue = Math.min(...sleepData);
+                        const range = maxValue - minValue || 1;
+                        const x = (index / (sleepData.length - 1)) * 100;
+                        const y = 100 - (((value - minValue) / range) * 100);
+                        return (
+                          <circle
+                            key={index}
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#8b5cf6"
+                            stroke="#fff"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+                    </svg>
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div className="absolute bottom-0 left-2 right-2 flex justify-between text-xs text-gray-500 pb-1">
+                    {sleepDates.map((date, index) => (
+                      <span key={index} className="text-center" style={{ width: `${100/sleepDates.length}%` }}>
+                        {date}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -356,6 +595,7 @@ export default function ProgressPage() {
         </main>
       </div>
     </div>
-  )
+  </div>
+)
 }
 

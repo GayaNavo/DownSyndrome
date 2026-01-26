@@ -53,6 +53,14 @@ service cloud.firestore {
         get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
     }
     
+    // Users can read/write health data for their children
+    match /health_data/{healthDataId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(resource.data.childId)).data.parentId == request.auth.uid;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/children/$(request.resource.data.childId)).data.parentId == request.auth.uid;
+    }
+    
     // Users can read/write documents for their children
     match /documents/{documentId} {
       allow read, write: if request.auth != null && 
@@ -100,12 +108,17 @@ The application uses the following collections:
 - Document ID: Auto-generated
 - Fields: `childId`, `category`, `score`, `date`, `notes`, `createdAt`
 
-### 5. `documents`
+### 5. `health_data`
+- Stores health metrics (weight, height, sleep patterns)
+- Document ID: Auto-generated
+- Fields: `childId`, `weight`, `height`, `sleepingHours`, `date`, `notes`, `createdAt`
+
+### 6. `documents`
 - Stores uploaded documents (reports, therapy notes, etc.)
 - Document ID: Auto-generated
 - Fields: `childId`, `title`, `type`, `fileUrl`, `fileName`, `uploadedAt`, `createdAt`
 
-### 6. `appointments`
+### 7. `appointments`
 - Stores appointments and scheduled events
 - Document ID: Auto-generated
 - Fields: `childId`, `title`, `description`, `date`, `location`, `type`, `createdAt`, `updatedAt`

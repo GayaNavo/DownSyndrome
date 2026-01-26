@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
-import DashboardHeader from './DashboardHeader'
-import { getChildrenByParent, ChildData } from '@/lib/firebase/firestore'
+import AppHeader from './AppHeader'
+import { getChildDocument, ChildData } from '@/lib/firebase/firestore'
 
 export default function DashboardPage() {
   const { currentUser } = useAuth()
@@ -14,16 +14,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (currentUser) {
-      getChildrenByParent(currentUser.uid)
-        .then((childrenData) => {
-          setChildren(childrenData)
-          if (childrenData.length > 0) {
-            setSelectedChild(childrenData[0])
+      getChildDocument(currentUser.uid)
+        .then((childData) => {
+          console.log('Fetched child:', childData)
+          if (childData) {
+            setChildren([childData])
+            setSelectedChild(childData)
+          } else {
+            setChildren([])
+            setSelectedChild(null)
           }
           setLoading(false)
         })
         .catch((error) => {
-          console.error('Error fetching children:', error)
+          console.error('Error fetching child:', error)
+          console.log('Current user ID:', currentUser?.uid)
           setLoading(false)
         })
     } else {
@@ -31,22 +36,21 @@ export default function DashboardPage() {
     }
   }, [currentUser])
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <DashboardSidebar activePage="dashboard" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <AppHeader />
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <DashboardSidebar activePage="dashboard" />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <DashboardHeader title="Dashboard" />
-
-        {/* Main Content Area */}
-        <main className="p-6">
-          {/* Child Overview Card */}
+        {/* Main Content */}
+        <div className="flex-1 ml-64">
+          {/* Main Content Area */}
+          <main className="p-6">
+            {/* Child Overview Card */}
           {loading ? (
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
               <div className="text-center py-8">
-                <p className="text-blue-100">Loading...</p>
+                <p className="text-blue-100">Loading child information...</p>
               </div>
             </div>
           ) : selectedChild ? (
@@ -89,27 +93,35 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Add New Entry Button */}
-                  <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md">
+                  <a 
+                    href="/dashboard/entry"
+                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md inline-block"
+                  >
                     + Add New Entry
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
           ) : (
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
               <div className="text-center py-8">
-                <p className="text-blue-100 mb-4">No children registered yet.</p>
-                <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md">
-                  + Add Your First Child
-                </button>
+                <p className="text-blue-100 mb-4">No child registered yet.</p>
+                <a 
+                  href="/dashboard/children"
+                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md inline-block"
+                >
+                  + Add Your Child
+                </a>
               </div>
             </div>
           )}
 
+
+
           {/* Quick Access Section */}
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Quick Access</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Progress Monitoring Card */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-48 bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
@@ -188,39 +200,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Document Library Card */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                  <div className="relative">
-                    <svg className="w-20 h-20 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
-                      <path d="M14 2v6h6" />
-                      <path d="M16 13H8" />
-                      <path d="M16 17H8" />
-                      <path d="M10 9H8" />
-                    </svg>
-                    <svg
-                      className="w-16 h-16 text-amber-500 absolute -top-2 -left-2"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Document Library</h4>
-                  <p className="text-gray-600 mb-4">
-                    Manage reports, therapy notes, and resources.
-                  </p>
-                  <a
-                    href="/dashboard/documents"
-                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
-                  >
-                    Open Library →
-                  </a>
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -339,6 +319,7 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  </div>
+)
 }
 
