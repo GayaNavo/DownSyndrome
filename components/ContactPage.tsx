@@ -252,7 +252,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             {[
               {
-                question: 'How do I get started with SyndromeTrack?',
+                question: 'How do I get started with HARMONY?',
                 answer:
                   'Simply click the "Get Started" button and create your free account. You can start using the platform immediately after registration.',
               },
@@ -262,9 +262,9 @@ export default function ContactPage() {
                   'Yes, we use enterprise-grade encryption and are HIPAA-compliant. Your data is stored securely and we never share it with third parties.',
               },
               {
-                question: 'Can I use SyndromeTrack on mobile devices?',
+                question: 'Can I use HARMONY on mobile devices?',
                 answer:
-                  'Absolutely! SyndromeTrack is fully responsive and we offer native iOS and Android apps for the best mobile experience.',
+                  'Absolutely! HARMONY is fully responsive and we offer native iOS and Android apps for the best mobile experience.',
               },
               {
                 question: 'What kind of support do you offer?',

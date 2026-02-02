@@ -1,7 +1,7 @@
 import SettingsPage from '@/components/SettingsPage';
 
 export const metadata = {
-  title: 'Settings | SyndromeTrack',
+  title: 'Settings | HARMONY',
   description: 'Manage your account and child profile settings.',
 };
 

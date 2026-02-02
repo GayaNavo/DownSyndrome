@@ -47,7 +47,7 @@ export default function LandingPage() {
                 <span className="text-blue-200">Detection & Care</span>
               </h1>
               <p className="text-xl sm:text-2xl text-blue-100 mb-8 max-w-2xl mx-auto lg:mx-0">
-                SyndromeTrack helps healthcare professionals and families track, monitor, and manage
+                HARMONY helps healthcare professionals and families track, monitor, and manage
                 developmental progress with cutting-edge technology.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -66,22 +66,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Illustration/Image Placeholder */}
+            {/* Right Illustration/Image */}
             <div className="flex-1 flex justify-center lg:justify-end">
-              <div className="w-full max-w-lg">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-                  <div className="grid grid-cols-2 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="bg-white/20 rounded-lg p-4 backdrop-blur-sm border border-white/30"
-                      >
-                        <div className="h-24 bg-white/30 rounded mb-2"></div>
-                        <div className="h-2 bg-white/40 rounded w-3/4"></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="relative w-full max-w-lg aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&q=80&w=1000"
+                  alt="Healthcare professional with HARMONY"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent"></div>
               </div>
             </div>
           </div>
@@ -93,7 +86,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Why Choose SyndromeTrack?
+              Why Choose HARMONY?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Comprehensive tools designed to support early detection and ongoing care management.
@@ -102,147 +95,207 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=800" 
+                  alt="Early Detection" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Early Detection</h3>
-              <p className="text-gray-600">
-                Advanced screening tools and assessments to identify developmental markers early,
-                enabling timely intervention.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Early Detection</h3>
+                <p className="text-gray-600">
+                  Advanced screening tools and assessments to identify developmental markers early,
+                  enabling timely intervention.
+                </p>
+              </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" 
+                  alt="Progress Tracking" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Progress Tracking</h3>
-              <p className="text-gray-600">
-                Comprehensive tracking system to monitor developmental milestones and progress over
-                time with detailed analytics.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Progress Tracking</h3>
+                <p className="text-gray-600">
+                  Comprehensive tracking system to monitor developmental milestones and progress over
+                  time with detailed analytics.
+                </p>
+              </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800" 
+                  alt="Care Coordination" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Care Coordination</h3>
-              <p className="text-gray-600">
-                Seamless collaboration between healthcare providers, families, and support teams for
-                coordinated care.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Care Coordination</h3>
+                <p className="text-gray-600">
+                  Seamless collaboration between healthcare providers, families, and support teams for
+                  coordinated care.
+                </p>
+              </div>
             </div>
 
             {/* Feature 4 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&q=80&w=800" 
+                  alt="Personalized Plans" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Personalized Plans</h3>
-              <p className="text-gray-600">
-                Customized care plans tailored to individual needs, ensuring the most effective
-                intervention strategies.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Personalized Plans</h3>
+                <p className="text-gray-600">
+                  Customized care plans tailored to individual needs, ensuring the most effective
+                  intervention strategies.
+                </p>
+              </div>
             </div>
 
             {/* Feature 5 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=800" 
+                  alt="Secure Records" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Secure Records</h3>
-              <p className="text-gray-600">
-                HIPAA-compliant secure storage of medical records and assessments with encrypted
-                data protection.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Secure Records</h3>
+                <p className="text-gray-600">
+                  HIPAA-compliant secure storage of medical records and assessments with encrypted
+                  data protection.
+                </p>
+              </div>
             </div>
 
             {/* Feature 6 */}
-            <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <svg
-                  className="w-7 h-7 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group">
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&q=80&w=800" 
+                  alt="Real-time Updates" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/10"></div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Real-time Updates</h3>
-              <p className="text-gray-600">
-                Instant notifications and real-time updates to keep all stakeholders informed and
-                engaged.
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg
+                    className="w-7 h-7 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Real-time Updates</h3>
+                <p className="text-gray-600">
+                  Instant notifications and real-time updates to keep all stakeholders informed and
+                  engaged.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -255,7 +308,7 @@ export default function LandingPage() {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of healthcare professionals and families using SyndromeTrack to improve
+            Join thousands of healthcare professionals and families using HARMONY to improve
             outcomes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -282,7 +335,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Logo size="small" />
-                <span className="text-xl font-bold text-white">SyndromeTrack</span>
+                <span className="text-xl font-bold text-white">HARMONY</span>
               </div>
               <p className="text-sm">
                 Empowering Early Detection & Care for better developmental outcomes.
@@ -350,7 +403,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-            <p>&copy; {new Date().getFullYear()} SyndromeTrack. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} HARMONY. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -114,8 +114,8 @@ export default function RegistrationPage() {
         <div className="absolute bottom-12 left-12 flex items-center gap-4 z-10">
           <Logo size="large" />
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">SyndromeTrack</h1>
-            <p className="text-blue-200 text-lg">Empowering Early Detection & Care</p>
+            <h1 className="text-4xl font-bold text-white mb-2">HARMONY</h1>
+            <p className="text-blue-200 text-lg">Down Syndrome Care</p>
           </div>
         </div>
       </div>

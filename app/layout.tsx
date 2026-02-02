@@ -6,8 +6,8 @@ import { AuthProvider } from '@/contexts/AuthContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SyndromeTrack - Empowering Early Detection & Care',
-  description: 'Login to SyndromeTrack',
+  title: 'HARMONY - Down Syndrome Care',
+  description: 'Empowering early detection and care for Down Syndrome',
 }
 
 export default function RootLayout({

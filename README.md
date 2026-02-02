@@ -1,4 +1,4 @@
-# SyndromeTrack
+# HARMONY
 
 A modern Next.js application for early detection and care management.
 

@@ -125,9 +125,9 @@ export default function AIDetectionPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Section 1: Upload Facial Image */}
-              <div className="bg-white rounded-xl shadow-md p-8">
+              <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-8">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
                     1
@@ -201,8 +201,55 @@ export default function AIDetectionPage() {
               </div>
             </div>
 
+            {/* Instruction / Best Practices Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                <h4 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Instruction Guide
+                </h4>
+                <div className="space-y-4">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden border-2 border-white shadow-sm">
+                    <img 
+                      src="https://images.unsplash.com/photo-1590033821368-7f7f469b1561?auto=format&fit=crop&q=80&w=400" 
+                      alt="Correct pose example" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <ul className="text-sm text-blue-800 space-y-3">
+                    <li className="flex gap-2">
+                      <span className="font-bold text-blue-600">✓</span>
+                      Face should be well-lit from the front
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-blue-600">✓</span>
+                      Neutral facial expression (closed mouth)
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-blue-600">✓</span>
+                      Ensure the background is plain
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Privacy Note
+                </h4>
+                <p className="text-sm text-orange-800">
+                  Facial images are processed securely and used only for preliminary analysis. We never share sensitive data with third parties.
+                </p>
+              </div>
+            </div>
+
               {/* Section 2: Complete the SDQ */}
-              <div className="bg-white rounded-xl shadow-md p-8">
+              <div className="lg:col-span-3 bg-white rounded-xl shadow-md p-8">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
                     2

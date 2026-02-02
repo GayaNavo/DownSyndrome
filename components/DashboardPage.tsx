@@ -123,20 +123,21 @@ export default function DashboardPage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Quick Access</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Progress Monitoring Card */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
-                  <div className="w-full px-6 py-4">
-                    <div className="flex items-end justify-between h-32 gap-2">
-                      {[10, 20, 30, 50, 70, 90].map((height, index) => (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all group">
+                <div className="h-48 relative overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" 
+                    alt="Progress Monitoring" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 to-transparent flex items-end p-6">
+                    <div className="flex items-end justify-between w-full h-12 gap-1">
+                      {[40, 60, 45, 80, 55, 90].map((height, index) => (
                         <div
                           key={index}
-                          className="flex-1 bg-white rounded-t"
+                          className="flex-1 bg-white/40 rounded-t backdrop-blur-sm"
                           style={{ height: `${height}%` }}
-                        >
-                          <div className="text-xs text-center text-white mt-1 font-semibold">
-                            {height}%
-                          </div>
-                        </div>
+                        ></div>
                       ))}
                     </div>
                   </div>
@@ -156,34 +157,25 @@ export default function DashboardPage() {
               </div>
 
               {/* AI Detection Card */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-20">
-                    <svg className="w-full h-full" viewBox="0 0 200 200">
-                      <circle cx="50" cy="50" r="3" fill="white" opacity="0.8">
-                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx="150" cy="80" r="4" fill="white" opacity="0.6">
-                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx="100" cy="150" r="3" fill="white" opacity="0.7">
-                        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" />
-                      </circle>
-                      <line x1="50" y1="50" x2="150" y2="80" stroke="white" strokeWidth="1" opacity="0.3" />
-                      <line x1="150" y1="80" x2="100" y2="150" stroke="white" strokeWidth="1" opacity="0.3" />
-                      <line x1="100" y1="150" x2="50" y2="50" stroke="white" strokeWidth="1" opacity="0.3" />
-                    </svg>
-                  </div>
-                  <div className="relative z-10 text-white text-center">
-                    <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                    <p className="text-sm font-semibold">AI Analysis</p>
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all group">
+                <div className="h-48 relative overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&q=80&w=800" 
+                    alt="AI Detection" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                      <p className="text-sm font-semibold">AI Analysis</p>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6">

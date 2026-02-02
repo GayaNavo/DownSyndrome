@@ -26,7 +26,7 @@ export default function AppHeader() {
           <div className="flex items-center">
             <Link href={currentUser ? '/dashboard' : '/'} className="flex items-center gap-3">
               <Logo size="small" />
-              <span className="text-xl font-bold text-gray-900">SyndromeTrack</span>
+              <span className="text-xl font-bold text-gray-900">HARMONY</span>
             </Link>
           </div>
 

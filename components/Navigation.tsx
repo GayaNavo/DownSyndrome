@@ -6,7 +6,7 @@ export default function Navigation() {
       {/* Logo */}
       <div className="flex items-center gap-3">
         <Logo size="small" />
-        <span className="text-xl font-bold text-gray-900">SyndromeTrack</span>
+        <span className="text-xl font-bold text-gray-900">HARMONY</span>
       </div>
 
       {/* Navigation Links */}

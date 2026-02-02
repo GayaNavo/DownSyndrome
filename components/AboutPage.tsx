@@ -74,10 +74,17 @@ export default function AboutPage() {
     <div className="min-h-screen bg-white">
       <AppHeader />
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-blue-900 text-white py-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=2000" 
+            alt="About Harmony Background" 
+            className="w-full h-full object-cover opacity-20"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
-            <h1 className="text-5xl sm:text-6xl font-bold mb-6">About SyndromeTrack</h1>
+            <h1 className="text-5xl sm:text-6xl font-bold mb-6">About HARMONY</h1>
             <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto">
               Empowering healthcare professionals and families with innovative tools for early
               detection and comprehensive care management.
@@ -93,7 +100,7 @@ export default function AboutPage() {
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Mission</h2>
               <p className="text-lg text-gray-600 mb-4">
-                SyndromeTrack was founded with a simple yet powerful mission: to empower healthcare
+                HARMONY was founded with a simple yet powerful mission: to empower healthcare
                 professionals and families with the tools they need to detect developmental conditions
                 early and provide the best possible care.
               </p>
@@ -110,13 +117,21 @@ export default function AboutPage() {
                 need it.
               </p>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8">
-              <div className="flex justify-center mb-6">
-                <Logo size="large" />
-              </div>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">SyndromeTrack</h3>
-                <p className="text-gray-600">Empowering Early Detection & Care</p>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[500px]">
+              <img 
+                src="https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&q=80&w=1000" 
+                alt="Our Mission" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-blue-900/10"></div>
+              <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-white/20">
+                <div className="flex items-center gap-4">
+                  <Logo size="small" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">HARMONY</h3>
+                    <p className="text-sm text-gray-600 font-medium">Empowering Early Detection & Care</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -143,7 +158,7 @@ export default function AboutPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Values</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The principles that guide everything we do at SyndromeTrack.
+              The principles that guide everything we do at HARMONY.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
