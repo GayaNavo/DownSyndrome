@@ -117,23 +117,35 @@ export default function ParentProfile() {
           
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              {/* Profile Cover Photo */}
+              <div className="h-48 relative overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=2000" 
+                  alt="Profile Cover" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-blue-900/30"></div>
+              </div>
+
               {/* Profile Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
+              <div className="bg-white p-6 border-b border-gray-100">
+                <div className="flex flex-col md:flex-row items-center gap-6 -mt-20 relative z-10">
+                  <div className="w-32 h-32 bg-white p-2 rounded-full shadow-xl">
+                    <div className="w-full h-full bg-blue-600 rounded-full flex items-center justify-center text-white">
+                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-3xl font-bold">{userProfile?.displayName || 'Parent Profile'}</h1>
-                    <p className="text-blue-200 mt-1">{userProfile?.email}</p>
-                    <p className="text-blue-200">Member since {userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 'Unknown'}</p>
+                  <div className="text-center md:text-left pt-4 md:pt-12">
+                    <h1 className="text-3xl font-bold text-gray-900">{userProfile?.displayName || 'Parent Profile'}</h1>
+                    <p className="text-gray-500 font-medium">{userProfile?.email}</p>
+                    <p className="text-gray-400 text-sm">Member since {userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 'Unknown'}</p>
                   </div>
                 </div>
               </div>

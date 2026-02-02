@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, addDoc, Timestamp } from 'firebase/firestore'
+import { collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, addDoc, Timestamp, orderBy } from 'firebase/firestore'
 import { db } from './config'
 import { getAuthInstance } from './config'
 
@@ -22,6 +22,7 @@ export const COLLECTIONS = {
   DOCUMENTS: 'documents',
   APPOINTMENTS: 'appointments',
   HEALTH_DATA: 'health_data',
+  UPCOMING_EVENTS: 'upcoming_events',
 } as const
 
 // User data structure
@@ -108,6 +109,19 @@ export interface HealthData {
   date: Timestamp
   notes?: string
   createdAt: Timestamp
+}
+
+// Upcoming events structure
+export interface UpcomingEvent {
+  id?: string
+  childId: string
+  title: string
+  description?: string
+  date: Timestamp
+  type: 'appointment' | 'assessment' | 'therapy' | 'milestone' | 'follow_up'
+  location?: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 
 // ============ USER OPERATIONS ============
@@ -514,5 +528,131 @@ export const updateHealthDataEntry = async (healthDataId: string, updates: Parti
     ...updates,
     updatedAt: Timestamp.now(),
   })
+}
+
+// ============ UPCOMING EVENTS OPERATIONS ============
+
+/**
+ * Create a new upcoming event
+ */
+export const createUpcomingEvent = async (eventData: Omit<UpcomingEvent, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const eventsRef = collection(ensureDb(), COLLECTIONS.UPCOMING_EVENTS)
+  const now = Timestamp.now()
+  const docRef = await addDoc(eventsRef, {
+    ...eventData,
+    createdAt: now,
+    updatedAt: now,
+  })
+  
+  return docRef.id
+}
+
+/**
+ * Get upcoming events for a child (future dates only)
+ */
+export const getUpcomingEventsByChild = async (childId: string): Promise<UpcomingEvent[]> => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const eventsRef = collection(ensureDb(), COLLECTIONS.UPCOMING_EVENTS)
+  const now = Timestamp.now()
+  
+  const q = query(
+    eventsRef, 
+    where('childId', '==', childId),
+    where('date', '>=', now),
+    orderBy('date', 'asc')
+  )
+  
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  } as UpcomingEvent))
+}
+
+/**
+ * Get all events for a child (including past)
+ */
+export const getAllEventsByChild = async (childId: string): Promise<UpcomingEvent[]> => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const eventsRef = collection(ensureDb(), COLLECTIONS.UPCOMING_EVENTS)
+  const q = query(
+    eventsRef, 
+    where('childId', '==', childId),
+    orderBy('date', 'desc')
+  )
+  
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  } as UpcomingEvent))
+}
+
+/**
+ * Update upcoming event
+ */
+export const updateUpcomingEvent = async (eventId: string, updates: Partial<UpcomingEvent>): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const eventRef = doc(ensureDb(), COLLECTIONS.UPCOMING_EVENTS, eventId)
+  await updateDoc(eventRef, {
+    ...updates,
+    updatedAt: Timestamp.now(),
+  })
+}
+
+/**
+ * Delete upcoming event
+ */
+export const deleteUpcomingEvent = async (eventId: string): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const eventRef = doc(ensureDb(), COLLECTIONS.UPCOMING_EVENTS, eventId)
+  await deleteDoc(eventRef)
+}
+
+/**
+ * Get recent events (last 7 days)
+ */
+export const getRecentEventsByChild = async (childId: string): Promise<UpcomingEvent[]> => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const eventsRef = collection(ensureDb(), COLLECTIONS.UPCOMING_EVENTS)
+  const now = Timestamp.now()
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  
+  const q = query(
+    eventsRef,
+    where('childId', '==', childId),
+    where('date', '>=', Timestamp.fromDate(oneWeekAgo)),
+    where('date', '<=', now),
+    orderBy('date', 'desc')
+  )
+  
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  } as UpcomingEvent))
 }
 

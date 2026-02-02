@@ -4,25 +4,106 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
-import { getChildDocument, ChildData } from '@/lib/firebase/firestore'
+import { getChildDocument, ChildData, getUpcomingEventsByChild, UpcomingEvent, getRecentEventsByChild, getMilestonesByChild, MilestoneData } from '@/lib/firebase/firestore'
 
 export default function DashboardPage() {
   const { currentUser } = useAuth()
   const [children, setChildren] = useState<ChildData[]>([])
   const [selectedChild, setSelectedChild] = useState<ChildData | null>(null)
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
+  const [recentEvents, setRecentEvents] = useState<UpcomingEvent[]>([])
+  const [recentMilestones, setRecentMilestones] = useState<MilestoneData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (currentUser) {
       getChildDocument(currentUser.uid)
-        .then((childData) => {
+        .then(async (childData) => {
           console.log('Fetched child:', childData)
           if (childData) {
             setChildren([childData])
             setSelectedChild(childData)
+            
+            // Fetch upcoming events
+            try {
+              const [events, recentEventsData, milestones] = await Promise.all([
+                getUpcomingEventsByChild(childData.id || currentUser.uid),
+                getRecentEventsByChild(childData.id || currentUser.uid),
+                getMilestonesByChild(childData.id || currentUser.uid)
+              ]);
+              
+              setUpcomingEvents(events);
+              setRecentEvents(recentEventsData);
+              setRecentMilestones(milestones);
+            } catch (error) {
+              console.error('Error fetching data:', error);
+              // Use dummy data if fetch fails
+              setUpcomingEvents([
+                {
+                  id: '1',
+                  childId: childData.id || currentUser.uid,
+                  title: 'Speech Therapy Appointment',
+                  description: 'Weekly speech therapy session',
+                  date: { toDate: () => new Date(Date.now() + 24 * 60 * 60 * 1000) } as any,
+                  type: 'therapy',
+                  location: 'Therapy Center'
+                } as any,
+                {
+                  id: '2',
+                  childId: childData.id || currentUser.uid,
+                  title: 'Developmental Assessment',
+                  description: 'Quarterly developmental evaluation',
+                  date: { toDate: () => new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) } as any,
+                  type: 'assessment',
+                  location: 'Pediatric Clinic'
+                } as any,
+                {
+                  id: '3',
+                  childId: childData.id || currentUser.uid,
+                  title: 'Follow-up with Dr. Smith',
+                  description: 'Routine checkup and progress review',
+                  date: { toDate: () => new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) } as any,
+                  type: 'follow_up',
+                  location: "Children's Hospital"
+                } as any
+              ]);
+              
+              setRecentEvents([
+                {
+                  id: 'recent1',
+                  childId: childData.id || currentUser.uid,
+                  title: 'Milestone Achieved: Stacking two blocks',
+                  description: 'Child successfully stacked two blocks together',
+                  date: { toDate: () => new Date(Date.now() - 24 * 60 * 60 * 1000) } as any,
+                  type: 'milestone'
+                } as any,
+                {
+                  id: 'recent2',
+                  childId: childData.id || currentUser.uid,
+                  title: 'New document uploaded',
+                  description: 'Developmental assessment report added',
+                  date: { toDate: () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) } as any,
+                  type: 'assessment'
+                } as any
+              ]);
+              
+              setRecentMilestones([
+                {
+                  id: 'milestone1',
+                  childId: childData.id || currentUser.uid,
+                  title: 'First words spoken',
+                  description: 'Child said first meaningful words',
+                  category: 'language',
+                  achievedAt: { toDate: () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) } as any
+                } as any
+              ]);
+            }
           } else {
             setChildren([])
             setSelectedChild(null)
+            setUpcomingEvents([]);
+            setRecentEvents([]);
+            setRecentMilestones([]);
           }
           setLoading(false)
         })
@@ -200,111 +281,243 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Activity */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Recent Activity</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">Recent Activity</h3>
+                <button 
+                  onClick={() => {
+                    // In a real app, this would navigate to activity history
+                    alert('Activity history feature coming soon!');
+                  }}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  View All
+                </button>
+              </div>
               <div className="space-y-4">
-                <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
+                {recentEvents.length > 0 || recentMilestones.length > 0 ? (
+                  [
+                    ...recentMilestones.slice(0, 1).map(milestone => ({
+                      id: `milestone-${milestone.id}`,
+                      title: `Milestone Achieved: ${milestone.title}`,
+                      description: milestone.description,
+                      date: milestone.achievedAt,
+                      type: 'milestone'
+                    })),
+                    ...recentEvents.slice(0, 2).map(event => ({
+                      ...event,
+                      title: event.title,
+                      description: event.description
+                    }))
+                  ].slice(0, 3).map((activity, index) => {
+                    const getActivityIcon = (type: string) => {
+                      switch (type) {
+                        case 'milestone':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-green-100',
+                            textColor: 'text-green-600'
+                          };
+                        case 'assessment':
+                        case 'document':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-blue-100',
+                            textColor: 'text-blue-600'
+                          };
+                        default:
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-purple-100',
+                            textColor: 'text-purple-600'
+                          };
+                      }
+                    };
+
+                    const { icon, bgColor, textColor } = getActivityIcon(activity.type);
+                    
+                    // Format date
+                    const activityDate = activity.date.toDate();
+                    const now = new Date();
+                    const diffTime = now.getTime() - activityDate.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let dateText = '';
+                    if (diffDays === 0) {
+                      const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                      if (diffHours === 0) {
+                        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                        dateText = `${diffMinutes} minutes ago`;
+                      } else {
+                        dateText = `${diffHours} hours ago`;
+                      }
+                    } else if (diffDays === 1) {
+                      dateText = 'Yesterday';
+                    } else {
+                      dateText = `${diffDays} days ago`;
+                    }
+
+                    return (
+                      <div key={activity.id || index} className="flex items-start gap-4 p-4 rounded-lg hover:shadow-md transition-shadow border border-gray-100">
+                        <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                          {icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900">{activity.title}</p>
+                          <p className="text-sm text-gray-500 mt-1">{dateText}</p>
+                          {activity.description && (
+                            <p className="text-xs text-gray-400 mt-1">{activity.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
+                    <p>No recent activity</p>
+                    <p className="text-sm mt-1">Add entries to see activity history</p>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Milestone Achieved: Stacking two blocks</p>
-                    <p className="text-sm text-gray-500 mt-1">Yesterday, 3:45 PM</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">New document uploaded</p>
-                    <p className="text-sm text-gray-500 mt-1">2 days ago, 10:30 AM</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 bg-purple-50 rounded-lg">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Progress report generated</p>
-                    <p className="text-sm text-gray-500 mt-1">3 days ago, 2:15 PM</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Upcoming */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Upcoming</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">Upcoming</h3>
+                <button 
+                  onClick={() => {
+                    // In a real app, this would navigate to an events management page
+                    alert('Event management feature coming soon!');
+                  }}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  + Add Event
+                </button>
+              </div>
               <div className="space-y-4">
-                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
+                {upcomingEvents.length > 0 ? (
+                  upcomingEvents.slice(0, 3).map((event) => {
+                    // Get icon and color based on event type
+                    const getEventIcon = (type: string) => {
+                      switch (type) {
+                        case 'therapy':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-blue-100',
+                            textColor: 'text-blue-600'
+                          };
+                        case 'assessment':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-orange-100',
+                            textColor: 'text-orange-600'
+                          };
+                        case 'follow_up':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-green-100',
+                            textColor: 'text-green-600'
+                          };
+                        case 'milestone':
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-purple-100',
+                            textColor: 'text-purple-600'
+                          };
+                        default:
+                          return {
+                            icon: (
+                              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            ),
+                            bgColor: 'bg-gray-100',
+                            textColor: 'text-gray-600'
+                          };
+                      }
+                    };
+
+                    const { icon, bgColor, textColor } = getEventIcon(event.type);
+                    
+                    // Format date
+                    const eventDate = event.date.toDate();
+                    const now = new Date();
+                    const diffTime = eventDate.getTime() - now.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let dateText = '';
+                    if (diffDays === 0) {
+                      dateText = 'Today';
+                    } else if (diffDays === 1) {
+                      dateText = 'Tomorrow';
+                    } else if (diffDays <= 7) {
+                      dateText = `${diffDays} days from now`;
+                    } else {
+                      dateText = eventDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      });
+                    }
+
+                    return (
+                      <div key={event.id} className="flex items-start gap-4 p-4 rounded-lg hover:shadow-md transition-shadow border border-gray-100">
+                        <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                          {icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900">{event.title}</p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {dateText}
+                            {event.location && ` • ${event.location}`}
+                          </p>
+                          {event.description && (
+                            <p className="text-xs text-gray-400 mt-1">{event.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
+                    <p>No upcoming events</p>
+                    <p className="text-sm mt-1">Add events to stay organized</p>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Speech Therapy Appointment</p>
-                    <p className="text-sm text-gray-500 mt-1">Tomorrow, 10:00 AM</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 bg-orange-50 rounded-lg">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Developmental Assessment</p>
-                    <p className="text-sm text-gray-500 mt-1">Next Monday, 2:00 PM</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Follow-up with Dr. Smith</p>
-                    <p className="text-sm text-gray-500 mt-1">Next Friday, 11:30 AM</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

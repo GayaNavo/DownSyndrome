@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
-import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData } from '@/lib/firebase/firestore'
+import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData, getProgressByChild, ProgressData } from '@/lib/firebase/firestore'
 
 export default function ProgressPage() {
   const { currentUser } = useAuth()
@@ -12,8 +12,19 @@ export default function ProgressPage() {
   const [selectedChild, setSelectedChild] = useState<ChildData | null>(null)
   const [milestones, setMilestones] = useState<MilestoneData[]>([])
   const [healthData, setHealthData] = useState<HealthData[]>([])
+  const [progressData, setProgressData] = useState<ProgressData[]>([])
   const [timePeriod, setTimePeriod] = useState<'7days' | '30days' | '6months' | 'alltime'>('30days')
   const [loading, setLoading] = useState(true)
+  const [showReportModal, setShowReportModal] = useState(false)
+
+  // Functions to open and close the report modal
+  const openReportModal = () => {
+    setShowReportModal(true);
+  };
+
+  const closeReportModal = () => {
+    setShowReportModal(false);
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -23,14 +34,16 @@ export default function ProgressPage() {
           if (childData) {
             setChildren([childData])
             setSelectedChild(childData)
-            // Fetch milestones and health data
+            // Fetch milestones, health data, and progress data
             const childId = childData.id || currentUser.uid
             Promise.all([
               getMilestonesByChild(childId),
-              getHealthDataByChild(childId)
-            ]).then(([milestonesData, healthData]) => {
+              getHealthDataByChild(childId),
+              getProgressByChild(childId)
+            ]).then(([milestonesData, healthData, progressData]) => {
               setMilestones(milestonesData);
               setHealthData(healthData);
+              setProgressData(progressData);
             });
           } else {
             setChildren([])
@@ -51,10 +64,12 @@ export default function ProgressPage() {
     if (selectedChild?.id) {
       Promise.all([
         getMilestonesByChild(selectedChild.id),
-        getHealthDataByChild(selectedChild.id)
-      ]).then(([milestonesData, healthData]) => {
+        getHealthDataByChild(selectedChild.id),
+        getProgressByChild(selectedChild.id)
+      ]).then(([milestonesData, healthData, progressData]) => {
         setMilestones(milestonesData);
         setHealthData(healthData);
+        setProgressData(progressData);
       });
     }
   }, [selectedChild])
@@ -175,6 +190,21 @@ export default function ProgressPage() {
         <div className="flex-1 ml-64">
           {/* Main Content Area */}
           <main className="p-6">
+          {/* Page Banner Image */}
+          <div className="mb-8 rounded-2xl overflow-hidden h-48 relative shadow-lg">
+            <img 
+              src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=2000" 
+              alt="Growth Tracking" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 to-transparent flex items-center px-8">
+              <div className="max-w-md">
+                <h2 className="text-2xl font-bold text-white mb-2">Growth & Development</h2>
+                <p className="text-blue-50 text-sm">Monitor your child's journey with detailed health metrics and milestone tracking.</p>
+              </div>
+            </div>
+          </div>
+
           {/* Title and Time Period Selector */}
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -504,19 +534,17 @@ export default function ProgressPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Summary & Insights</h3>
               </div>
               <p className="text-gray-700 mb-4 leading-relaxed">
-                Consistent growth has been observed this month. Weight and height are tracking along the 50th
-                percentile. Sleep patterns show a slight decrease over the last week, which is worth monitoring.
-                Continue to encourage regular nap times.
+                {generateInsights()}
               </p>
-              <a
-                href="/dashboard/progress/report"
+              <button
+                onClick={openReportModal}
                 className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
               >
                 View Detailed Report
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
+              </button>
             </div>
 
             {/* Recent Milestones Card */}
@@ -597,5 +625,134 @@ export default function ProgressPage() {
     </div>
   </div>
 )
-}
 
+      {/* Detailed Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Detailed Progress Report</h3>
+                <button 
+                  onClick={closeReportModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Executive Summary */}
+                <div className="bg-blue-50 p-5 rounded-lg">
+                  <h4 className="font-bold text-blue-800 mb-2">Executive Summary</h4>
+                  <p className="text-gray-700">{generateInsights()}</p>
+                </div>
+                
+                {/* Health Data Summary */}
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-3">Health Data Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600">Weight</p>
+                      <p className="text-xl font-bold">{latestWeight ? `${latestWeight} kg` : 'No data'}</p>
+                      <p className={`text-sm ${weightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {weightChange.isPositive ? '+' : '-'}{weightChange.value.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600">Height</p>
+                      <p className="text-xl font-bold">{latestHeight ? `${latestHeight} cm` : 'No data'}</p>
+                      <p className={`text-sm ${heightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {heightChange.isPositive ? '+' : '-'}{heightChange.value.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600">Sleep</p>
+                      <p className="text-xl font-bold">{latestSleep ? `${latestSleep} hrs` : 'No data'}</p>
+                      <p className={`text-sm ${sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {sleepChange.isPositive ? '+' : '-'}{sleepChange.value.toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Milestones */}
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-3">Recent Milestones</h4>
+                  <div className="space-y-2">
+                    {milestones.length > 0 ? (
+                      milestones.slice(0, 5).map((milestone) => (
+                        <div key={milestone.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{milestone.title}</p>
+                            <p className="text-sm text-gray-600">{milestone.description}</p>
+                          </div>
+                          <span className="text-sm text-gray-500">
+                            {milestone.achievedAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No milestones recorded yet</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Progress Tracking */}
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-3">Progress Tracking</h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {progressData.length > 0 ? (
+                          progressData.slice(0, 5).map((progress) => (
+                            <tr key={progress.id}>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{progress.category}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {progress.score}/10
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {progress.date.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-500">{progress.notes || 'N/A'}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-4 py-4 text-center text-sm text-gray-500">No progress data recorded yet</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                {/* Report Generation Info */}
+                <div className="pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-500 text-center">
+                    Report generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  </div>
+</div>
+</div>
+)
+}

@@ -352,7 +352,18 @@ export default function DocumentsPage() {
               ))}
             </nav>
 
-            <button className="mt-4 flex items-center justify-center gap-2 w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium">
+            <div className="mt-8 mb-4 rounded-xl overflow-hidden relative group cursor-pointer">
+              <img 
+                src="https://images.unsplash.com/photo-1586769852044-692d6e392410?auto=format&fit=crop&q=80&w=600" 
+                alt="Document Storage" 
+                className="w-full h-32 object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-blue-900/40 flex items-center justify-center p-4">
+                <p className="text-white text-[10px] text-center font-medium">Keep your medical records organized and secure.</p>
+              </div>
+            </div>
+
+            <button className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>

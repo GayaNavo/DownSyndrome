@@ -88,15 +88,19 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white">
       <AppHeader />
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl sm:text-6xl font-bold mb-6">Contact Us</h1>
-            <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto">
-              Have questions? We&apos;re here to help. Get in touch with our team and we&apos;ll
-              respond as soon as possible.
-            </p>
-          </div>
+      <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1516307361474-320dc6caae1b?auto=format&fit=crop&q=80&w=2000"
+          alt="Contact Support"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-[2px]"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6">Contact Us</h1>
+          <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto font-medium">
+            Have questions? We're here to help. Get in touch with our team and we'll
+            respond as soon as possible.
+          </p>
         </div>
       </section>
 
@@ -106,7 +110,15 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Information */}
             <div className="lg:col-span-1">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Get in Touch</h2>
+              <div className="mb-8 rounded-xl overflow-hidden shadow-lg h-48 sm:h-64 relative group">
+                <img 
+                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Our Team" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-blue-900/20"></div>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
               <p className="text-gray-600 mb-8">
                 Whether you have a question about features, pricing, or need support, our team is
                 ready to answer all your questions.
