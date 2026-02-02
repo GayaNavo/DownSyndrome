@@ -162,7 +162,7 @@ export default function DashboardSidebar({ activePage = 'dashboard' }: SidebarPr
           </p>
           <a
             href="/contact"
-            className="block w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+            className="block w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg font-medium hover:bg-blue-800 transition-colors text-sm"
           >
             Contact Support
           </a>

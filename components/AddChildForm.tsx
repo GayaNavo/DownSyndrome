@@ -273,7 +273,7 @@ export default function AddChildForm() {
                   <p className="text-gray-600 mb-6">You can only manage one child at a time. Please visit the dashboard to view and update your child's information.</p>
                   <a
                     href="/dashboard"
-                    className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
                   >
                     Go to Dashboard
                   </a>

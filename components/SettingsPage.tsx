@@ -227,7 +227,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
                   >
                     Save Changes
                   </button>
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
                   >
                     Update Child Info
                   </button>

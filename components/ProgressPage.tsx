@@ -153,7 +153,7 @@ export default function ProgressPage() {
             <main className="p-6">
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">No children registered yet.</p>
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors">
                   + Add Your First Child
                 </button>
               </div>
@@ -193,7 +193,7 @@ export default function ProgressPage() {
                   onClick={() => setTimePeriod(period.id as any)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     timePeriod === period.id
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-white hover:bg-blue-800'
                       : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                   }`}
                 >

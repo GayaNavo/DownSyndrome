@@ -3,13 +3,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, onAuthStateChanged } from 'firebase/auth'
 import { getAuthInstance } from '@/lib/firebase/config'
-import { signIn, signUp, logOut, resetPassword } from '@/lib/firebase/auth'
+import { signIn, signUp, logOut, resetPassword, signInWithGoogle, handleGoogleRedirectResult } from '@/lib/firebase/auth'
 
 interface AuthContextType {
   currentUser: User | null
   loading: boolean
   signUp: (email: string, password: string, displayName?: string, phone?: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
+  signInWithGoogle: () => Promise<any>
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
 }
@@ -37,6 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const auth = getAuthInstance()
+      
+      // Handle Google redirect result
+      handleGoogleRedirectResult().then((result) => {
+        if (result?.user) {
+          setCurrentUser(result.user)
+        }
+      }).catch((error) => {
+        console.error('Error handling Google redirect:', error)
+      })
+
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         setCurrentUser(user)
         setLoading(false)
@@ -54,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     logout: logOut,
     resetPassword,
   }

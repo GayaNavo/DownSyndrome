@@ -30,6 +30,7 @@ export interface UserData {
   email: string
   displayName: string
   phone?: string
+  photoURL?: string
   role: 'parent' | 'healthcare_provider' | 'admin'
   createdAt: Timestamp
   updatedAt: Timestamp

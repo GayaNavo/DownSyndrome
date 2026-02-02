@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState, forwardRef, useImperativeHandle, Ref } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, Ref } from 'react'
 
 const questions = [
   { id: 1, text: "My child is generally considerate of other people's feelings", category: "prosocial" },
@@ -28,7 +28,7 @@ const questions = [
   { id: 23, text: "My child gets along better with adults than with other children", category: "peer" },
   { id: 24, text: "My child has many fears and is easily frightened", category: "emotional" },
   { id: 25, text: "My child finishes what they start and has a good attention span", category: "hyperactivity", reverse: true },
-];
+]
 
 // Group questions by category for better organization
 const questionGroups = [
@@ -57,82 +57,81 @@ const questionGroups = [
     icon: "😊",
     questions: questions.filter(q => q.category === "prosocial")
   }
-];
+]
 
 interface Answers {
-  [key: number]: number;
+  [key: number]: number
 }
 
 interface Scores {
-  emotional: number;
-  conduct: number;
-  hyperactivity: number;
-  peer: number;
-  prosocial: number;
-  [key: string]: number;
+  emotional: number
+  conduct: number
+  hyperactivity: number
+  peer: number
+  prosocial: number
+  [key: string]: number
 }
 
 interface Results {
-  scores: Scores;
-  totalDifficulty: number;
-  percentage: number;
+  scores: Scores
+  totalDifficulty: number
+  percentage: number
 }
 
 export interface SDQTrackerHandle {
-  getResults: () => Results | null;
+  getResults: () => Results | null
 }
 
 const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerHandle>) => {
-  const [answers, setAnswers] = useState<Answers>({});
-  const [results, setResults] = useState<Results | null>(null);
-  const [currentGroup, setCurrentGroup] = useState(0);
-  const [expandedGroups, setExpandedGroups] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<Answers>({})
+  const [results, setResults] = useState<Results | null>(null)
+  const [expandedGroups, setExpandedGroups] = useState<number[]>([])
 
   // Expose getResults function to parent component
   useImperativeHandle(ref, () => ({
-    getResults: () => results,
-  }));
+    getResults: () => results
+  }))
 
   const handleOptionChange = (qId: number, value: number) => {
-    setAnswers({ ...answers, [qId]: value });
-  };
+    setAnswers({ ...answers, [qId]: value })
+  }
 
   const toggleGroup = (groupIndex: number) => {
     if (expandedGroups.includes(groupIndex)) {
-      setExpandedGroups(expandedGroups.filter(index => index !== groupIndex));
+      setExpandedGroups(expandedGroups.filter(index => index !== groupIndex))
     } else {
-      setExpandedGroups([...expandedGroups, groupIndex]);
+      setExpandedGroups([...expandedGroups, groupIndex])
     }
-  };
+  }
 
   const getTotalAnswered = () => {
-    return Object.keys(answers).length;
-  };
+    return Object.keys(answers).length
+  }
 
   const isGroupCompleted = (groupIndex: number) => {
-    const group = questionGroups[groupIndex];
-    return group.questions.every(q => answers[q.id] !== undefined);
-  };
+    const group = questionGroups[groupIndex]
+    return group.questions.every(q => answers[q.id] !== undefined)
+  }
 
   const calculateScore = () => {
-    let scores: Scores = { emotional: 0, conduct: 0, hyperactivity: 0, peer: 0, prosocial: 0 };
+    let scores: Scores = { emotional: 0, conduct: 0, hyperactivity: 0, peer: 0, prosocial: 0 }
 
     questions.forEach((q) => {
-      let val = answers[q.id] || 0;
+      let val = answers[q.id] || 0
       if (q.reverse) {
         // Reverse scoring logic: 0 becomes 2, 2 becomes 0, 1 stays 1
-        val = val === 2 ? 0 : val === 0 ? 2 : 1;
+        val = val === 2 ? 0 : val === 0 ? 2 : 1
       }
-      scores[q.category] += val;
-    });
+      scores[q.category] += val
+    })
 
-    const totalDifficulty = scores.emotional + scores.conduct + scores.hyperactivity + scores.peer;
-    const percentage = (totalDifficulty / 40) * 100;
+    const totalDifficulty = scores.emotional + scores.conduct + scores.hyperactivity + scores.peer
+    const percentage = (totalDifficulty / 40) * 100
 
-    const calculatedResults = { scores, totalDifficulty, percentage };
-    setResults(calculatedResults);
-    return calculatedResults;
-  };
+    const calculatedResults = { scores, totalDifficulty, percentage }
+    setResults(calculatedResults)
+    return calculatedResults
+  }
 
   return (
     <div className="bg-white">
@@ -215,7 +214,7 @@ const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerH
                             onClick={() => handleOptionChange(q.id, val)}
                             className={`flex-1 min-w-[100px] px-4 py-2 rounded-lg border text-xs font-bold transition-all duration-200 ${
                               answers[q.id] === val 
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105' 
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105 hover:bg-blue-800' 
                               : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
                             }`}
                           >
@@ -275,8 +274,8 @@ const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerH
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <h3 className="font-bold text-gray-800 mb-3 text-center text-sm">Detailed Category Breakdown</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[{
-                  cat: 'emotional', label: 'Emotional Symptoms', color: 'text-red-600', bg: 'bg-red-50', icon: '😢' },
+                {[
+                  { cat: 'emotional', label: 'Emotional Symptoms', color: 'text-red-600', bg: 'bg-red-50', icon: '😢' },
                   { cat: 'conduct', label: 'Conduct Problems', color: 'text-orange-600', bg: 'bg-orange-50', icon: '😠' },
                   { cat: 'hyperactivity', label: 'Hyperactivity/Inattention', color: 'text-yellow-600', bg: 'bg-yellow-50', icon: '⚡' },
                   { cat: 'peer', label: 'Peer Relationship Issues', color: 'text-purple-600', bg: 'bg-purple-50', icon: '👥' }
@@ -322,9 +321,7 @@ const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerH
         )}
       </div>
     </div>
-  );
-}
+  )
+})
 
-export default SDQTracker;
-
-
+export default SDQTracker
