@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
-import { getChildDocument, ChildData, getUpcomingEventsByChild, UpcomingEvent, getRecentEventsByChild, getMilestonesByChild, MilestoneData } from '@/lib/firebase/firestore'
+import { getChildDocument, ChildData, getUpcomingEventsByChild, UpcomingEvent, getRecentEventsByChild, getMilestonesByChild, MilestoneData, createUpcomingEvent, updateUpcomingEvent, deleteUpcomingEvent } from '@/lib/firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 
 export default function DashboardPage() {
   const { currentUser } = useAuth()
@@ -14,90 +15,44 @@ export default function DashboardPage() {
   const [recentEvents, setRecentEvents] = useState<UpcomingEvent[]>([])
   const [recentMilestones, setRecentMilestones] = useState<MilestoneData[]>([])
   const [loading, setLoading] = useState(true)
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null)
+  const [savingEvent, setSavingEvent] = useState(false)
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    location: '',
+    type: 'appointment' as UpcomingEvent['type']
+  })
+
+  const loadDashboardData = async (childId: string) => {
+    try {
+      const [events, recentEventsData, milestones] = await Promise.all([
+        getUpcomingEventsByChild(childId),
+        getRecentEventsByChild(childId),
+        getMilestonesByChild(childId)
+      ]);
+      setUpcomingEvents(events);
+      setRecentEvents(recentEventsData);
+      setRecentMilestones(milestones);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setUpcomingEvents([]);
+      setRecentEvents([]);
+      setRecentMilestones([]);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
       getChildDocument(currentUser.uid)
         .then(async (childData) => {
-          console.log('Fetched child:', childData)
           if (childData) {
             setChildren([childData])
             setSelectedChild(childData)
-            
-            // Fetch upcoming events
-            try {
-              const [events, recentEventsData, milestones] = await Promise.all([
-                getUpcomingEventsByChild(childData.id || currentUser.uid),
-                getRecentEventsByChild(childData.id || currentUser.uid),
-                getMilestonesByChild(childData.id || currentUser.uid)
-              ]);
-              
-              setUpcomingEvents(events);
-              setRecentEvents(recentEventsData);
-              setRecentMilestones(milestones);
-            } catch (error) {
-              console.error('Error fetching data:', error);
-              // Use dummy data if fetch fails
-              setUpcomingEvents([
-                {
-                  id: '1',
-                  childId: childData.id || currentUser.uid,
-                  title: 'Speech Therapy Appointment',
-                  description: 'Weekly speech therapy session',
-                  date: { toDate: () => new Date(Date.now() + 24 * 60 * 60 * 1000) } as any,
-                  type: 'therapy',
-                  location: 'Therapy Center'
-                } as any,
-                {
-                  id: '2',
-                  childId: childData.id || currentUser.uid,
-                  title: 'Developmental Assessment',
-                  description: 'Quarterly developmental evaluation',
-                  date: { toDate: () => new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) } as any,
-                  type: 'assessment',
-                  location: 'Pediatric Clinic'
-                } as any,
-                {
-                  id: '3',
-                  childId: childData.id || currentUser.uid,
-                  title: 'Follow-up with Dr. Smith',
-                  description: 'Routine checkup and progress review',
-                  date: { toDate: () => new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) } as any,
-                  type: 'follow_up',
-                  location: "Children's Hospital"
-                } as any
-              ]);
-              
-              setRecentEvents([
-                {
-                  id: 'recent1',
-                  childId: childData.id || currentUser.uid,
-                  title: 'Milestone Achieved: Stacking two blocks',
-                  description: 'Child successfully stacked two blocks together',
-                  date: { toDate: () => new Date(Date.now() - 24 * 60 * 60 * 1000) } as any,
-                  type: 'milestone'
-                } as any,
-                {
-                  id: 'recent2',
-                  childId: childData.id || currentUser.uid,
-                  title: 'New document uploaded',
-                  description: 'Developmental assessment report added',
-                  date: { toDate: () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) } as any,
-                  type: 'assessment'
-                } as any
-              ]);
-              
-              setRecentMilestones([
-                {
-                  id: 'milestone1',
-                  childId: childData.id || currentUser.uid,
-                  title: 'First words spoken',
-                  description: 'Child said first meaningful words',
-                  category: 'language',
-                  achievedAt: { toDate: () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) } as any
-                } as any
-              ]);
-            }
+            await loadDashboardData(childData.id || currentUser.uid);
           } else {
             setChildren([])
             setSelectedChild(null)
@@ -109,13 +64,87 @@ export default function DashboardPage() {
         })
         .catch((error) => {
           console.error('Error fetching child:', error)
-          console.log('Current user ID:', currentUser?.uid)
           setLoading(false)
         })
     } else {
       setLoading(false)
     }
-  }, [currentUser])
+  }, [currentUser]);
+
+  // Event management functions
+  const openEventModal = (event?: UpcomingEvent) => {
+    if (event) {
+      const eventDate = event.date.toDate();
+      setEditingEvent(event);
+      setEventForm({
+        title: event.title,
+        description: event.description || '',
+        date: eventDate.toISOString().split('T')[0],
+        time: eventDate.toTimeString().slice(0, 5),
+        location: event.location || '',
+        type: event.type
+      });
+    } else {
+      setEditingEvent(null);
+      setEventForm({
+        title: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        time: '09:00',
+        location: '',
+        type: 'appointment'
+      });
+    }
+    setShowEventModal(true);
+  };
+
+  const closeEventModal = () => {
+    setShowEventModal(false);
+    setEditingEvent(null);
+  };
+
+  const handleSaveEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedChild?.id) {
+      alert('No child selected. Please add a child first.');
+      return;
+    }
+
+    setSavingEvent(true);
+    try {
+      const dateTime = new Date(`${eventForm.date}T${eventForm.time}`);
+      
+      if (editingEvent && editingEvent.id) {
+        await updateUpcomingEvent(editingEvent.id, {
+          title: eventForm.title,
+          description: eventForm.description,
+          date: Timestamp.fromDate(dateTime),
+          location: eventForm.location,
+          type: eventForm.type
+        });
+      } else {
+        await createUpcomingEvent({
+          childId: selectedChild.id,
+          title: eventForm.title,
+          description: eventForm.description,
+          date: Timestamp.fromDate(dateTime),
+          location: eventForm.location,
+          type: eventForm.type
+        });
+      }
+      
+      // Refresh the upcoming events list
+      await loadDashboardData(selectedChild.id);
+      closeEventModal();
+    } catch (error) {
+      console.error('Error saving event:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to save event: ${errorMessage}`);
+    } finally {
+      setSavingEvent(false);
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <AppHeader />
@@ -400,10 +429,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-2xl font-bold text-gray-900">Upcoming</h3>
                 <button 
-                  onClick={() => {
-                    // In a real app, this would navigate to an events management page
-                    alert('Event management feature coming soon!');
-                  }}
+                  onClick={() => openEventModal()}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
                   + Add Event
@@ -524,6 +550,149 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+
+    {/* Event Management Modal */}
+    {showEventModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <form onSubmit={handleSaveEvent}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {editingEvent ? 'Edit Event' : 'Add New Event'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={closeEventModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Event Title */}
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Title *
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Speech Therapy Appointment"
+                    required
+                  />
+                </div>
+
+                {/* Event Type */}
+                <div>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Type *
+                  </label>
+                  <select
+                    id="type"
+                    value={eventForm.type}
+                    onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as any })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="appointment">Appointment</option>
+                    <option value="assessment">Assessment</option>
+                    <option value="therapy">Therapy Session</option>
+                    <option value="milestone">Milestone</option>
+                    <option value="follow_up">Follow-up</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Brief description of the event"
+                  />
+                </div>
+
+                {/* Date and Time */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      id="date"
+                      value={eventForm.date}
+                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
+                      Time *
+                    </label>
+                    <input
+                      type="time"
+                      id="time"
+                      value={eventForm.time}
+                      onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Pediatric Clinic, Room 101"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeEventModal}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEvent}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {savingEvent ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
   </div>
 )
 }

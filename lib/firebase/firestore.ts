@@ -562,19 +562,22 @@ export const getUpcomingEventsByChild = async (childId: string): Promise<Upcomin
   const eventsRef = collection(ensureDb(), COLLECTIONS.UPCOMING_EVENTS)
   const now = Timestamp.now()
   
+  // Query only by childId to avoid needing a composite index,
+  // then filter and sort on the client side
   const q = query(
     eventsRef, 
-    where('childId', '==', childId),
-    where('date', '>=', now),
-    orderBy('date', 'asc')
+    where('childId', '==', childId)
   )
   
   const querySnapshot = await getDocs(q)
   
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  } as UpcomingEvent))
+  return querySnapshot.docs
+    .map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as UpcomingEvent))
+    .filter(event => event.date >= now)
+    .sort((a, b) => a.date.toMillis() - b.date.toMillis())
 }
 
 /**
