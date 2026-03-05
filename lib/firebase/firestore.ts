@@ -572,11 +572,19 @@ export const getUpcomingEventsByChild = async (childId: string): Promise<Upcomin
   const querySnapshot = await getDocs(q)
   
   return querySnapshot.docs
-    .map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    } as UpcomingEvent))
-    .filter(event => event.date >= now)
+    .map(doc => {
+      const data = doc.data()
+      // Ensure date is a proper Timestamp object
+      const date = data.date instanceof Timestamp 
+        ? data.date 
+        : new Timestamp(data.date.seconds, data.date.nanoseconds)
+      return {
+        id: doc.id,
+        ...data,
+        date
+      } as UpcomingEvent
+    })
+    .filter(event => event.date.toMillis() >= now.toMillis())
     .sort((a, b) => a.date.toMillis() - b.date.toMillis())
 }
 
@@ -642,20 +650,30 @@ export const getRecentEventsByChild = async (childId: string): Promise<UpcomingE
   const now = Timestamp.now()
   const oneWeekAgo = new Date()
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  const oneWeekAgoTimestamp = Timestamp.fromDate(oneWeekAgo)
   
+  // Query only by childId to avoid composite index, filter client-side
   const q = query(
     eventsRef,
-    where('childId', '==', childId),
-    where('date', '>=', Timestamp.fromDate(oneWeekAgo)),
-    where('date', '<=', now),
-    orderBy('date', 'desc')
+    where('childId', '==', childId)
   )
   
   const querySnapshot = await getDocs(q)
   
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  } as UpcomingEvent))
+  return querySnapshot.docs
+    .map(doc => {
+      const data = doc.data()
+      // Ensure date is a proper Timestamp object
+      const date = data.date instanceof Timestamp 
+        ? data.date 
+        : new Timestamp(data.date.seconds, data.date.nanoseconds)
+      return {
+        id: doc.id,
+        ...data,
+        date
+      } as UpcomingEvent
+    })
+    .filter(event => event.date.toMillis() >= oneWeekAgoTimestamp.toMillis() && event.date.toMillis() <= now.toMillis())
+    .sort((a, b) => b.date.toMillis() - a.date.toMillis())
 }
 

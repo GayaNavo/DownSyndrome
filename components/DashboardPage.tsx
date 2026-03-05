@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [recentMilestones, setRecentMilestones] = useState<MilestoneData[]>([])
   const [loading, setLoading] = useState(true)
   const [showEventModal, setShowEventModal] = useState(false)
+  const [showActivityModal, setShowActivityModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null)
   const [savingEvent, setSavingEvent] = useState(false)
   const [eventForm, setEventForm] = useState({
@@ -313,10 +314,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-2xl font-bold text-gray-900">Recent Activity</h3>
                 <button 
-                  onClick={() => {
-                    // In a real app, this would navigate to activity history
-                    alert('Activity history feature coming soon!');
-                  }}
+                  onClick={() => setShowActivityModal(true)}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
                   View All
@@ -690,6 +688,152 @@ export default function DashboardPage() {
               </div>
             </div>
           </form>
+        </div>
+      </div>
+    )}
+
+    {/* Activity History Modal */}
+    {showActivityModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-gray-900">Recent Activity</h3>
+              <button
+                onClick={() => setShowActivityModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="space-y-4">
+              {(() => {
+                const allActivities = [
+                  ...recentMilestones.map(milestone => ({
+                    id: `milestone-${milestone.id}`,
+                    title: `Milestone Achieved: ${milestone.title}`,
+                    description: milestone.description,
+                    date: milestone.achievedAt,
+                    type: 'milestone' as const
+                  })),
+                  ...recentEvents.map(event => ({
+                    id: event.id,
+                    title: event.title,
+                    description: event.description,
+                    date: event.date,
+                    type: event.type
+                  }))
+                ].sort((a, b) => b.date.toMillis() - a.date.toMillis());
+
+                if (allActivities.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-500">
+                      <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p>No recent activity</p>
+                      <p className="text-sm mt-1">Add entries to see activity history</p>
+                    </div>
+                  );
+                }
+
+                return allActivities.map((activity) => {
+                  const getActivityIcon = (type: string) => {
+                    switch (type) {
+                      case 'milestone':
+                        return {
+                          icon: (
+                            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ),
+                          bgColor: 'bg-green-100'
+                        };
+                      case 'assessment':
+                      case 'document':
+                        return {
+                          icon: (
+                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          ),
+                          bgColor: 'bg-blue-100'
+                        };
+                      case 'therapy':
+                        return {
+                          icon: (
+                            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          ),
+                          bgColor: 'bg-purple-100'
+                        };
+                      default:
+                        return {
+                          icon: (
+                            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                          ),
+                          bgColor: 'bg-gray-100'
+                        };
+                    }
+                  };
+
+                  const { icon, bgColor } = getActivityIcon(activity.type);
+                  
+                  const activityDate = activity.date.toDate();
+                  const now = new Date();
+                  const diffTime = now.getTime() - activityDate.getTime();
+                  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  let dateText = '';
+                  if (diffDays === 0) {
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    if (diffHours === 0) {
+                      const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                      dateText = `${diffMinutes} minutes ago`;
+                    } else {
+                      dateText = `${diffHours} hours ago`;
+                    }
+                  } else if (diffDays === 1) {
+                    dateText = 'Yesterday';
+                  } else {
+                    dateText = `${diffDays} days ago`;
+                  }
+
+                  return (
+                    <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                        {icon}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{activity.title}</p>
+                        <p className="text-sm text-gray-500 mt-1">{dateText}</p>
+                        {activity.description && (
+                          <p className="text-sm text-gray-600 mt-2">{activity.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+          
+          <div className="p-6 border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={() => setShowActivityModal(false)}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     )}
