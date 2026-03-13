@@ -108,7 +108,7 @@ export default function DashboardPage() {
     e.preventDefault();
     
     if (!selectedChild?.id) {
-      alert('No child selected. Please add a child first.');
+      alert('⚠️ No child selected. Please add a child first.');
       return;
     }
 
@@ -124,6 +124,7 @@ export default function DashboardPage() {
           location: eventForm.location,
           type: eventForm.type
         });
+        alert(`✅ Event updated successfully! 📅`);
       } else {
         await createUpcomingEvent({
           childId: selectedChild.id,
@@ -133,21 +134,21 @@ export default function DashboardPage() {
           location: eventForm.location,
           type: eventForm.type
         });
+        alert(`✅ Event created successfully! 🎉`);
       }
       
       // Refresh the upcoming events list
       await loadDashboardData(selectedChild.id);
       closeEventModal();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving event:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Failed to save event: ${errorMessage}`);
+      alert(`❌ Failed to save event: ${error.message || 'Unknown error occurred'}`);
     } finally {
       setSavingEvent(false);
     }
   };
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -159,67 +160,77 @@ export default function DashboardPage() {
           <main className="p-6">
             {/* Child Overview Card */}
           {loading ? (
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
-              <div className="text-center py-8">
-                <p className="text-blue-100">Loading child information...</p>
+            <div className="bg-gradient-to-r from-sky-400 via-sky-500 to-mint-400 rounded-3xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-4 right-10 w-8 h-8 bg-white/20 rounded-full animate-float"></div>
+                <div className="absolute bottom-4 left-10 w-6 h-6 bg-white/20 rounded-full animate-float-delayed"></div>
+              </div>
+              <div className="text-center py-8 relative">
+                <p className="text-white/90">Loading your little one's information...</p>
               </div>
             </div>
           ) : selectedChild ? (
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
-              <div className="flex items-center justify-between">
+            <div className="bg-gradient-to-r from-sky-400 via-sky-500 to-mint-400 rounded-3xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-4 right-20 w-12 h-12 bg-white/10 rounded-full animate-float"></div>
+                <div className="absolute bottom-4 left-20 w-8 h-8 bg-white/10 rounded-full animate-float-delayed"></div>
+                <svg className="absolute top-8 right-1/3 w-6 h-6 text-white/20 animate-spin-slow" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              
+              <div className="flex items-center justify-between relative">
                 <div className="flex items-center gap-6">
                   {/* Child Avatar */}
-                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                    <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
+                  <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+                    <span className="text-4xl">👶</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="text-3xl font-bold">{selectedChild.name}</h2>
-                      <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-6 h-6 text-sunshine-300 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     </div>
-                    <p className="text-blue-100 text-lg">Age: {selectedChild.age} years</p>
+                    <p className="text-white/90 text-lg">Age: {selectedChild.age} years</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-12">
                   {/* Developmental Age */}
                   <div className="text-center">
-                    <p className="text-blue-200 text-sm mb-1">Developmental Age</p>
+                    <p className="text-white/80 text-sm mb-1">Developmental Age</p>
                     <p className="text-2xl font-semibold">{selectedChild.developmentalAge || 'Not set'}</p>
                   </div>
 
                   {/* Last Milestone */}
                   <div className="text-center">
-                    <p className="text-blue-200 text-sm mb-1">Last Milestone</p>
+                    <p className="text-white/80 text-sm mb-1">Last Milestone</p>
                     <p className="text-2xl font-semibold">{selectedChild.lastMilestone || 'No milestones yet'}</p>
                   </div>
 
                   {/* Add New Entry Button */}
                   <a 
                     href="/dashboard/entry"
-                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md inline-block"
+                    className="bg-white text-sky-600 px-6 py-3 rounded-2xl font-bold hover:bg-sky-50 transition-colors shadow-lg inline-block transform hover:scale-105"
                   >
-                    + Add New Entry
+                    + Add Entry
                   </a>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
-              <div className="text-center py-8">
-                <p className="text-blue-100 mb-4">No child registered yet.</p>
+            <div className="bg-gradient-to-r from-sky-400 via-sky-500 to-mint-400 rounded-3xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-4 right-10 w-8 h-8 bg-white/20 rounded-full animate-float"></div>
+              </div>
+              <div className="text-center py-8 relative">
+                <span className="text-5xl mb-4 block">👋</span>
+                <p className="text-white/90 mb-4">No child registered yet.</p>
                 <a 
                   href="/dashboard/children"
-                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md inline-block"
+                  className="bg-white text-sky-600 px-6 py-3 rounded-2xl font-bold hover:bg-sky-50 transition-colors shadow-lg inline-block transform hover:scale-105"
                 >
                   + Add Your Child
                 </a>
@@ -231,36 +242,42 @@ export default function DashboardPage() {
 
           {/* Quick Access Section */}
           <div className="mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Quick Access</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span className="text-2xl">🎯</span>
+              Quick Access
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Progress Monitoring Card */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all group">
+              <div className="card-playful group">
                 <div className="h-48 relative overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" 
-                    alt="Progress Monitoring" 
+                    src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=800" 
+                    alt="Child achieving milestones" 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 to-transparent flex items-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-mint-500/80 to-transparent flex items-end p-6">
                     <div className="flex items-end justify-between w-full h-12 gap-1">
                       {[40, 60, 45, 80, 55, 90].map((height, index) => (
                         <div
                           key={index}
-                          className="flex-1 bg-white/40 rounded-t backdrop-blur-sm"
+                          className="flex-1 bg-white/50 rounded-t backdrop-blur-sm"
                           style={{ height: `${height}%` }}
                         ></div>
                       ))}
                     </div>
                   </div>
+                  <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-xl">📈</span>
+                  </div>
                 </div>
                 <div className="p-6">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Progress Monitoring</h4>
+                  <h4 className="text-xl font-bold text-gray-800 mb-2">Milestone Tracker</h4>
                   <p className="text-gray-600 mb-4">
-                    View developmental charts and track milestones.
+                    Celebrate every achievement on your child's journey!
                   </p>
                   <a
                     href="/dashboard/progress"
-                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
+                    className="text-mint-600 font-bold hover:text-mint-700 inline-flex items-center gap-1"
                   >
                     View Progress →
                   </a>
@@ -268,54 +285,51 @@ export default function DashboardPage() {
               </div>
 
               {/* AI Detection Card */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all group">
+              <div className="card-playful group">
                 <div className="h-48 relative overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&q=80&w=800" 
-                    alt="AI Detection" 
+                    src="https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?auto=format&fit=crop&q=80&w=800" 
+                    alt="AI Analysis" 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-t from-sky-500/80 to-transparent flex items-center justify-center">
                     <div className="text-white text-center">
-                      <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                        />
-                      </svg>
-                      <p className="text-sm font-semibold">AI Analysis</p>
+                      <span className="text-5xl mb-2 block">🤖</span>
+                      <p className="text-sm font-bold">Smart Analysis</p>
                     </div>
+                  </div>
+                  <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-xl">✨</span>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">AI Detection</h4>
+                  <h4 className="text-xl font-bold text-gray-800 mb-2">AI Assistant</h4>
                   <p className="text-gray-600 mb-4">
-                    Analyze new media for developmental insights.
+                    Get helpful insights about your child's development.
                   </p>
                   <a
                     href="/dashboard/ai-detection"
-                    className="text-blue-600 font-medium hover:text-blue-700 inline-flex items-center gap-1"
+                    className="text-sky-600 font-bold hover:text-sky-700 inline-flex items-center gap-1"
                   >
                     Start Analysis →
                   </a>
                 </div>
               </div>
-
-
             </div>
           </div>
 
           {/* Recent Activity and Upcoming Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border border-white/50">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-gray-900">Recent Activity</h3>
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <span className="text-2xl">🎉</span>
+                  Recent Activity
+                </h3>
                 <button 
                   onClick={() => setShowActivityModal(true)}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sky-500 hover:text-sky-600 text-sm font-bold"
                 >
                   View All
                 </button>
@@ -412,23 +426,24 @@ export default function DashboardPage() {
                   })
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <p>No recent activity</p>
-                    <p className="text-sm mt-1">Add entries to see activity history</p>
+                    <span className="text-5xl mb-3 block">🌟</span>
+                    <p className="font-semibold">No recent activity</p>
+                    <p className="text-sm mt-1">Add entries to see your child's journey!</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Upcoming */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border border-white/50">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-gray-900">Upcoming</h3>
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <span className="text-2xl">📅</span>
+                  Upcoming
+                </h3>
                 <button 
                   onClick={() => openEventModal()}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-mint-500 hover:text-mint-600 text-sm font-bold"
                 >
                   + Add Event
                 </button>
@@ -535,11 +550,9 @@ export default function DashboardPage() {
                   })
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p>No upcoming events</p>
-                    <p className="text-sm mt-1">Add events to stay organized</p>
+                    <span className="text-5xl mb-3 block">🎈</span>
+                    <p className="font-semibold">No upcoming events</p>
+                    <p className="text-sm mt-1">Add events to plan your adventures!</p>
                   </div>
                 )}
               </div>

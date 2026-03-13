@@ -24,6 +24,18 @@ interface FormData {
   entryType: 'health' | 'milestone' | 'progress';
 }
 
+const tabEmojis = {
+  health: '💪',
+  milestone: '🏆',
+  progress: '📈'
+}
+
+const tabColors = {
+  health: 'from-sky-400 to-mint-400',
+  milestone: 'from-sunshine-400 to-coral-400',
+  progress: 'from-lavender-400 to-sky-400'
+}
+
 export default function EntryForm() {
   const { currentUser } = useAuth();
   const [children, setChildren] = useState<ChildData[]>([]);
@@ -129,7 +141,7 @@ export default function EntryForm() {
           notes: formData.notes,
         });
         
-        showNotification('success', 'Health data entry added successfully!');
+        showNotification('success', '🎉 Health data entry added successfully!');
       } else if (formData.entryType === 'milestone') {
         // Validate milestone data
         if (!formData.milestoneTitle) {
@@ -146,7 +158,7 @@ export default function EntryForm() {
           achievedAt: Timestamp.fromDate(new Date(formData.date)),
         });
         
-        showNotification('success', 'Milestone entry added successfully!');
+        showNotification('success', '🏆 Milestone entry added successfully! Amazing!');
         
         // Refresh recent milestones
         const milestones = await getMilestonesByChild(formData.childId);
@@ -167,7 +179,7 @@ export default function EntryForm() {
           notes: formData.notes,
         });
         
-        showNotification('success', 'Progress entry added successfully!');
+        showNotification('success', '📈 Progress entry added successfully! Keep it up!');
       }
       
       // Reset form
@@ -198,14 +210,15 @@ export default function EntryForm() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="entry" />
           <div className="flex-1 ml-64">
             <div className="p-6">
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                <p className="text-gray-500">Loading...</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-8 text-center border-2 border-white">
+                <span className="text-5xl animate-bounce inline-block">⏳</span>
+                <p className="text-gray-500 mt-4 text-lg">Loading...</p>
               </div>
             </div>
           </div>
@@ -215,7 +228,7 @@ export default function EntryForm() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="entry" />
@@ -224,70 +237,85 @@ export default function EntryForm() {
           
           <main className="p-6">
           {notification && (
-            <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mb-6 p-4 rounded-2xl shadow-lg animate-bounce ${notification.type === 'success' ? 'bg-gradient-to-r from-mint-100 to-sky-100 text-green-800 border-2 border-mint-200' : 'bg-gradient-to-r from-red-100 to-coral-100 text-red-800 border-2 border-red-200'}`}>
+              <span className="text-xl mr-2">{notification.type === 'success' ? '🎉' : '⚠️'}</span>
               {notification.message}
             </div>
           )}
           
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            {/* Fun Header */}
+            <div className="text-center mb-8">
+              <div className="inline-block p-4 rounded-full bg-gradient-to-br from-sky-200 to-mint-200 mb-4 animate-float">
+                <span className="text-5xl">📝</span>
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-500 via-mint-500 to-lavender-500 bg-clip-text text-transparent mb-2">
+                Track Your Child&apos;s Journey! 🌟
+              </h1>
+              <p className="text-gray-600 text-lg">Record every amazing moment of growth and development!</p>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden border-2 border-white">
               {/* Form Banner Image */}
-              <div className="h-40 relative overflow-hidden">
+              <div className="h-48 relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&q=80&w=1200" 
                   alt="Medical Entry" 
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-blue-900/40 flex items-center px-6">
-                  <h2 className="text-2xl font-bold text-white">Track Your Child's Development</h2>
+                <div className="absolute inset-0 bg-gradient-to-r from-sky-900/60 to-transparent flex items-center px-6">
+                  <div>
+                    <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                      <span className="text-4xl">📊</span>
+                      Track Your Child&apos;s Development
+                    </h2>
+                    <p className="text-sky-100 mt-2 text-lg">Every milestone matters! 🎯</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-6 border-b border-gray-200 bg-gray-50">
-                <div className="flex flex-wrap gap-4 mb-4">
-                  <button
-                    onClick={() => handleTabChange('health')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'health' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                  >
-                    Health Data
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('milestone')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'milestone' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                  >
-                    Milestone
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('progress')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'progress' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                  >
-                    Progress
-                  </button>
+              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {(['health', 'milestone', 'progress'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => handleTabChange(tab)}
+                      className={`px-6 py-3 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-md ${
+                        activeTab === tab 
+                          ? `bg-gradient-to-r ${tabColors[tab]} text-white shadow-lg` 
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
+                      }`}
+                    >
+                      <span className="mr-2">{tabEmojis[tab]}</span>
+                      {tab === 'health' ? 'Health Data' : tab === 'milestone' ? 'Milestones' : 'Progress'}
+                    </button>
+                  ))}
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {activeTab === 'health' && 'Record Health Measurements'}
-                  {activeTab === 'milestone' && 'Add New Milestone'}
-                  {activeTab === 'progress' && 'Track Progress'}
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <span>{tabEmojis[activeTab]}</span>
+                  {activeTab === 'health' && 'Record Health Measurements 💪'}
+                  {activeTab === 'milestone' && 'Add New Milestone 🏆'}
+                  {activeTab === 'progress' && 'Track Progress 📈'}
                 </h2>
               </div>
               
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-2">
-                      Child <span className="text-red-500">*</span>
+                  <div className="md:col-span-2">
+                    <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                      <span>👶</span> Child <span className="text-coral-500">*</span>
                     </label>
                     <select
                       name="childId"
                       value={formData.childId}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                     >
-                      <option value="">Select a child</option>
+                      <option value="">Select a child 👶</option>
                       {children.map(child => (
                         <option key={child.id} value={child.id}>
-                          {child.name}
+                          {child.name} ⭐
                         </option>
                       ))}
                     </select>
@@ -297,8 +325,8 @@ export default function EntryForm() {
                   {activeTab === 'health' && (
                     <>
                       <div>
-                        <label htmlFor="weight" className="block text-gray-700 font-medium mb-2">
-                          Weight (kg)
+                        <label htmlFor="weight" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>⚖️</span> Weight (kg)
                         </label>
                         <input
                           type="number"
@@ -308,14 +336,14 @@ export default function EntryForm() {
                           onChange={handleInputChange}
                           step="0.1"
                           min="0"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="e.g., 12.5"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="e.g., 12.5 🎯"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="height" className="block text-gray-700 font-medium mb-2">
-                          Height (cm)
+                        <label htmlFor="height" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>📏</span> Height (cm)
                         </label>
                         <input
                           type="number"
@@ -325,14 +353,14 @@ export default function EntryForm() {
                           onChange={handleInputChange}
                           step="0.1"
                           min="0"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="e.g., 85.2"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="e.g., 85.2 📊"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="sleepingHours" className="block text-gray-700 font-medium mb-2">
-                          Daily Sleeping Hours
+                        <label htmlFor="sleepingHours" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>😴</span> Daily Sleeping Hours
                         </label>
                         <input
                           type="number"
@@ -343,8 +371,8 @@ export default function EntryForm() {
                           step="0.5"
                           min="0"
                           max="24"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="e.g., 12.5"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="e.g., 12.5 💤"
                         />
                       </div>
                     </>
@@ -354,8 +382,8 @@ export default function EntryForm() {
                   {activeTab === 'milestone' && (
                     <>
                       <div className="md:col-span-2">
-                        <label htmlFor="milestoneTitle" className="block text-gray-700 font-medium mb-2">
-                          Milestone Title <span className="text-red-500">*</span>
+                        <label htmlFor="milestoneTitle" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>🏆</span> Milestone Title <span className="text-coral-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -363,43 +391,43 @@ export default function EntryForm() {
                           name="milestoneTitle"
                           value={formData.milestoneTitle || ''}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="e.g., Started walking independently"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="e.g., Started walking independently! 🚶‍♂️"
                         />
                       </div>
                       
                       <div className="md:col-span-2">
-                        <label htmlFor="milestoneDescription" className="block text-gray-700 font-medium mb-2">
-                          Description
+                        <label htmlFor="milestoneDescription" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>📝</span> Description
                         </label>
                         <textarea
                           id="milestoneDescription"
                           name="milestoneDescription"
                           value={formData.milestoneDescription || ''}
                           onChange={handleInputChange}
-                          rows={2}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Describe the milestone in detail..."
+                          rows={3}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="Describe this amazing achievement... 🌟"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="milestoneCategory" className="block text-gray-700 font-medium mb-2">
-                          Category
+                        <label htmlFor="milestoneCategory" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>🏷️</span> Category
                         </label>
                         <select
                           id="milestoneCategory"
                           name="milestoneCategory"
                           value={formData.milestoneCategory || 'general'}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         >
-                          <option value="physical">Physical</option>
-                          <option value="cognitive">Cognitive</option>
-                          <option value="social">Social</option>
-                          <option value="language">Language</option>
-                          <option value="emotional">Emotional</option>
-                          <option value="general">General</option>
+                          <option value="physical">💪 Physical</option>
+                          <option value="cognitive">🧠 Cognitive</option>
+                          <option value="social">👥 Social</option>
+                          <option value="language">🗣️ Language</option>
+                          <option value="emotional">💝 Emotional</option>
+                          <option value="general">🌟 General</option>
                         </select>
                       </div>
                     </>
@@ -409,29 +437,29 @@ export default function EntryForm() {
                   {activeTab === 'progress' && (
                     <>
                       <div>
-                        <label htmlFor="progressCategory" className="block text-gray-700 font-medium mb-2">
-                          Category <span className="text-red-500">*</span>
+                        <label htmlFor="progressCategory" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>📊</span> Category <span className="text-coral-500">*</span>
                         </label>
                         <select
                           id="progressCategory"
                           name="progressCategory"
                           value={formData.progressCategory || ''}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         >
-                          <option value="">Select category</option>
-                          <option value="motor_skills">Motor Skills</option>
-                          <option value="language_development">Language Development</option>
-                          <option value="social_skills">Social Skills</option>
-                          <option value="cognitive_skills">Cognitive Skills</option>
-                          <option value="self_care">Self-Care</option>
-                          <option value="adaptive_behavior">Adaptive Behavior</option>
+                          <option value="">Select category 📋</option>
+                          <option value="motor_skills">🤸 Motor Skills</option>
+                          <option value="language_development">🗣️ Language Development</option>
+                          <option value="social_skills">👥 Social Skills</option>
+                          <option value="cognitive_skills">🧠 Cognitive Skills</option>
+                          <option value="self_care">🧼 Self-Care</option>
+                          <option value="adaptive_behavior">🎯 Adaptive Behavior</option>
                         </select>
                       </div>
                       
                       <div>
-                        <label htmlFor="progressScore" className="block text-gray-700 font-medium mb-2">
-                          Score (1-10) <span className="text-red-500">*</span>
+                        <label htmlFor="progressScore" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                          <span>⭐</span> Score (1-10) <span className="text-coral-500">*</span>
                         </label>
                         <input
                           type="number"
@@ -442,16 +470,16 @@ export default function EntryForm() {
                           min="1"
                           max="10"
                           step="0.5"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Rate from 1-10"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                          placeholder="Rate from 1-10 ⭐"
                         />
                       </div>
                     </>
                   )}
                   
                   <div className="md:col-span-2">
-                    <label htmlFor="date" className="block text-gray-700 font-medium mb-2">
-                      Date <span className="text-red-500">*</span>
+                    <label htmlFor="date" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                      <span>📅</span> Date <span className="text-coral-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -460,13 +488,13 @@ export default function EntryForm() {
                       value={formData.date}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                     />
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label htmlFor="notes" className="block text-gray-700 font-medium mb-2">
-                      Additional Notes
+                    <label htmlFor="notes" className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg">
+                      <span>💭</span> Additional Notes
                     </label>
                     <textarea
                       id="notes"
@@ -474,8 +502,8 @@ export default function EntryForm() {
                       value={formData.notes}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Any additional observations or notes..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                      placeholder="Any additional observations or notes... 🌈"
                     />
                   </div>
                 </div>
@@ -483,8 +511,9 @@ export default function EntryForm() {
                 <div className="flex gap-4">
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                    className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                   >
+                    <span className="text-xl">✨</span>
                     Add {activeTab === 'health' ? 'Health Data' : activeTab === 'milestone' ? 'Milestone' : 'Progress'} Entry
                   </button>
                   
@@ -506,21 +535,36 @@ export default function EntryForm() {
                         entryType: activeTab,
                       });
                     }}
-                    className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-50 transition-all hover:border-gray-400 flex items-center gap-2"
                   >
-                    Clear Form
+                    <span className="text-xl">🔄</span> Clear Form
                   </button>
                 </div>
               </form>
             </div>
             
-            <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Tips for Adding Entries</h3>
-              <ul className="list-disc pl-5 text-blue-700 space-y-1">
-                <li>Use milestones to track significant achievements like first steps, words, or skills</li>
-                <li>Use progress entries to track ongoing development with numerical scores</li>
-                <li>Be specific in descriptions to help track patterns over time</li>
-                <li>Regular entries help create more accurate developmental charts</li>
+            {/* Tips Card */}
+            <div className="mt-8 bg-gradient-to-r from-lavender-100 to-sky-100 border-2 border-lavender-200 rounded-3xl p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-lavender-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">💡</span> Tips for Adding Entries
+              </h3>
+              <ul className="space-y-3 text-lavender-700">
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">🏆</span>
+                  <span>Use milestones to track significant achievements like first steps, words, or skills</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">📈</span>
+                  <span>Use progress entries to track ongoing development with numerical scores</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">🎯</span>
+                  <span>Be specific in descriptions to help track patterns over time</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">⭐</span>
+                  <span>Regular entries help create more accurate developmental charts</span>
+                </li>
               </ul>
             </div>
           </div>

@@ -1,5 +1,12 @@
 import { Patient } from '../models/Patient';
 
+export interface ServiceResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: any;
+}
+
 export class PatientService {
   private patients: Patient[] = [];
 
@@ -27,42 +34,121 @@ export class PatientService {
     ];
   }
 
-  async getAllPatients(): Promise<Patient[]> {
-    return this.patients;
+  async getAllPatients(): Promise<ServiceResponse<Patient[]>> {
+    try {
+      const patients = await this.patients;
+      return {
+        success: true,
+        message: '✅ Patients retrieved successfully',
+        data: patients,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to retrieve patients: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async getPatientById(id: string): Promise<Patient | null> {
-    const patient = this.patients.find(p => p.id === id);
-    return patient || null;
+  async getPatientById(id: string): Promise<ServiceResponse<Patient | null>> {
+    try {
+      const patient = this.patients.find(p => p.id === id);
+      if (patient) {
+        return {
+          success: true,
+          message: '✅ Patient retrieved successfully',
+          data: patient,
+        };
+      }
+      return {
+        success: false,
+        message: '⚠️ Patient not found',
+        data: null,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to retrieve patient: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async createPatient(patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient> {
-    const newPatient: Patient = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...patientData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.patients.push(newPatient);
-    return newPatient;
+  async createPatient(patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResponse<Patient>> {
+    try {
+      const newPatient: Patient = {
+        id: Math.random().toString(36).substr(2, 9),
+        ...patientData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.patients.push(newPatient);
+      return {
+        success: true,
+        message: `✅ Patient ${newPatient.firstName} ${newPatient.lastName} created successfully!`,
+        data: newPatient,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to create patient: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async updatePatient(id: string, patientData: Partial<Patient>): Promise<Patient | null> {
-    const index = this.patients.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    
-    this.patients[index] = {
-      ...this.patients[index],
-      ...patientData,
-      updatedAt: new Date(),
-    };
-    
-    return this.patients[index];
+  async updatePatient(id: string, patientData: Partial<Patient>): Promise<ServiceResponse<Patient | null>> {
+    try {
+      const index = this.patients.findIndex(p => p.id === id);
+      if (index === -1) {
+        return {
+          success: false,
+          message: '⚠️ Patient not found',
+          data: null,
+        };
+      }
+      
+      this.patients[index] = {
+        ...this.patients[index],
+        ...patientData,
+        updatedAt: new Date(),
+      };
+      
+      return {
+        success: true,
+        message: `✅ Patient ${this.patients[index].firstName} ${this.patients[index].lastName} updated successfully!`,
+        data: this.patients[index],
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to update patient: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async deletePatient(id: string): Promise<boolean> {
-    const initialLength = this.patients.length;
-    this.patients = this.patients.filter(p => p.id !== id);
-    return this.patients.length < initialLength;
+  async deletePatient(id: string): Promise<ServiceResponse<void>> {
+    try {
+      const initialLength = this.patients.length;
+      this.patients = this.patients.filter(p => p.id !== id);
+      if (this.patients.length < initialLength) {
+        return {
+          success: true,
+          message: '✅ Patient deleted successfully',
+        };
+      }
+      return {
+        success: false,
+        message: '⚠️ Patient not found',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to delete patient: ${error.message}`,
+        error,
+      };
+    }
   }
 }

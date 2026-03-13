@@ -1,5 +1,12 @@
 import { MedicalRecord } from '../models/MedicalRecord';
 
+export interface ServiceResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: any;
+}
+
 export class MedicalRecordService {
   private records: MedicalRecord[] = [];
 
@@ -31,42 +38,121 @@ export class MedicalRecordService {
     ];
   }
 
-  async getAllRecords(): Promise<MedicalRecord[]> {
-    return this.records;
+  async getAllRecords(): Promise<ServiceResponse<MedicalRecord[]>> {
+    try {
+      const records = await this.records;
+      return {
+        success: true,
+        message: '✅ Medical records retrieved successfully',
+        data: records,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to retrieve medical records: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async getRecordById(id: string): Promise<MedicalRecord | null> {
-    const record = this.records.find(r => r.id === id);
-    return record || null;
+  async getRecordById(id: string): Promise<ServiceResponse<MedicalRecord | null>> {
+    try {
+      const record = this.records.find(r => r.id === id);
+      if (record) {
+        return {
+          success: true,
+          message: '✅ Medical record retrieved successfully',
+          data: record,
+        };
+      }
+      return {
+        success: false,
+        message: '⚠️ Medical record not found',
+        data: null,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to retrieve medical record: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async createRecord(recordData: Omit<MedicalRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<MedicalRecord> {
-    const newRecord: MedicalRecord = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...recordData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.records.push(newRecord);
-    return newRecord;
+  async createRecord(recordData: Omit<MedicalRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResponse<MedicalRecord>> {
+    try {
+      const newRecord: MedicalRecord = {
+        id: Math.random().toString(36).substr(2, 9),
+        ...recordData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.records.push(newRecord);
+      return {
+        success: true,
+        message: `✅ Medical record created successfully for patient!`,
+        data: newRecord,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to create medical record: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async updateRecord(id: string, recordData: Partial<MedicalRecord>): Promise<MedicalRecord | null> {
-    const index = this.records.findIndex(r => r.id === id);
-    if (index === -1) return null;
-    
-    this.records[index] = {
-      ...this.records[index],
-      ...recordData,
-      updatedAt: new Date(),
-    };
-    
-    return this.records[index];
+  async updateRecord(id: string, recordData: Partial<MedicalRecord>): Promise<ServiceResponse<MedicalRecord | null>> {
+    try {
+      const index = this.records.findIndex(r => r.id === id);
+      if (index === -1) {
+        return {
+          success: false,
+          message: '⚠️ Medical record not found',
+          data: null,
+        };
+      }
+      
+      this.records[index] = {
+        ...this.records[index],
+        ...recordData,
+        updatedAt: new Date(),
+      };
+      
+      return {
+        success: true,
+        message: `✅ Medical record updated successfully!`,
+        data: this.records[index],
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to update medical record: ${error.message}`,
+        error,
+      };
+    }
   }
 
-  async deleteRecord(id: string): Promise<boolean> {
-    const initialLength = this.records.length;
-    this.records = this.records.filter(r => r.id !== id);
-    return this.records.length < initialLength;
+  async deleteRecord(id: string): Promise<ServiceResponse<void>> {
+    try {
+      const initialLength = this.records.length;
+      this.records = this.records.filter(r => r.id !== id);
+      if (this.records.length < initialLength) {
+        return {
+          success: true,
+          message: '✅ Medical record deleted successfully',
+        };
+      }
+      return {
+        success: false,
+        message: '⚠️ Medical record not found',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Failed to delete medical record: ${error.message}`,
+        error,
+      };
+    }
   }
 }

@@ -69,7 +69,7 @@ export default function ParentProfile() {
           phone: formData.phone,
         } : null);
         setEditing(false);
-        showNotification('success', 'Profile updated successfully');
+        showNotification('success', '🎉 Profile updated successfully!');
       } catch (error) {
         console.error('Error updating profile:', error);
         showNotification('error', 'Failed to update profile');
@@ -84,14 +84,15 @@ export default function ParentProfile() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="profile" />
           <div className="flex-1 ml-64">
             <div className="p-6">
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                <p className="text-gray-500">Loading profile...</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-8 text-center border-2 border-white">
+                <span className="text-6xl animate-bounce inline-block">👤</span>
+                <p className="text-gray-500 mt-4 text-lg">Loading profile...</p>
               </div>
             </div>
           </div>
@@ -101,7 +102,7 @@ export default function ParentProfile() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="profile" />
@@ -110,42 +111,41 @@ export default function ParentProfile() {
           
           <main className="p-6">
           {notification && (
-            <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mb-6 p-4 rounded-2xl shadow-lg animate-bounce ${notification.type === 'success' ? 'bg-gradient-to-r from-mint-100 to-sky-100 text-green-800 border-2 border-mint-200' : 'bg-gradient-to-r from-red-100 to-coral-100 text-red-800 border-2 border-red-200'}`}>
+              <span className="text-xl mr-2">{notification.type === 'success' ? '🎉' : '⚠️'}</span>
               {notification.message}
             </div>
           )}
           
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden border-2 border-white">
               {/* Profile Cover Photo */}
-              <div className="h-48 relative overflow-hidden">
+              <div className="h-56 relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=2000" 
                   alt="Profile Cover" 
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-blue-900/30"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-sky-900/60 to-transparent"></div>
               </div>
 
               {/* Profile Header */}
               <div className="bg-white p-6 border-b border-gray-100">
-                <div className="flex flex-col md:flex-row items-center gap-6 -mt-20 relative z-10">
-                  <div className="w-32 h-32 bg-white p-2 rounded-full shadow-xl">
-                    <div className="w-full h-full bg-blue-600 rounded-full flex items-center justify-center text-white">
-                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
+                <div className="flex flex-col md:flex-row items-center gap-6 -mt-24 relative z-10">
+                  <div className="w-36 h-36 bg-white p-2 rounded-full shadow-2xl">
+                    <div className="w-full h-full bg-gradient-to-br from-sky-400 to-mint-400 rounded-full flex items-center justify-center text-white text-6xl">
+                      👤
                     </div>
                   </div>
-                  <div className="text-center md:text-left pt-4 md:pt-12">
-                    <h1 className="text-3xl font-bold text-gray-900">{userProfile?.displayName || 'Parent Profile'}</h1>
-                    <p className="text-gray-500 font-medium">{userProfile?.email}</p>
-                    <p className="text-gray-400 text-sm">Member since {userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 'Unknown'}</p>
+                  <div className="text-center md:text-left pt-4 md:pt-16">
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                      {userProfile?.displayName || 'Parent Profile'}
+                      <span className="text-4xl">👋</span>
+                    </h1>
+                    <p className="text-gray-500 font-medium text-lg">{userProfile?.email}</p>
+                    <p className="text-gray-400 text-sm flex items-center gap-1 mt-1">
+                      <span>⭐</span> Member since {userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 'Unknown'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -156,8 +156,8 @@ export default function ParentProfile() {
                   <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="displayName">
-                          Full Name
+                        <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg" htmlFor="displayName">
+                          <span>👤</span> Full Name
                         </label>
                         <input
                           type="text"
@@ -165,14 +165,14 @@ export default function ParentProfile() {
                           name="displayName"
                           value={formData.displayName}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                           required
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="email">
-                          Email Address
+                        <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg" htmlFor="email">
+                          <span>📧</span> Email Address
                         </label>
                         <input
                           type="email"
@@ -180,15 +180,15 @@ export default function ParentProfile() {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl bg-gray-50 text-gray-500 cursor-not-allowed text-lg"
                           disabled
                         />
-                        <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+                        <p className="text-sm text-gray-400 mt-1">Email cannot be changed 🔒</p>
                       </div>
                       
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="phone">
-                          Phone Number
+                        <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg" htmlFor="phone">
+                          <span>📱</span> Phone Number
                         </label>
                         <input
                           type="tel"
@@ -196,7 +196,7 @@ export default function ParentProfile() {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         />
                       </div>
                     </div>
@@ -204,9 +204,9 @@ export default function ParentProfile() {
                     <div className="flex gap-4">
                       <button
                         type="submit"
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                        className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                       >
-                        Save Changes
+                        <span>💾</span> Save Changes
                       </button>
                       <button
                         type="button"
@@ -218,33 +218,41 @@ export default function ParentProfile() {
                             phone: userProfile?.phone || '',
                           });
                         }}
-                        className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                        className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-50 transition-all hover:border-gray-400 flex items-center gap-2"
                       >
-                        Cancel
+                        <span>❌</span> Cancel
                       </button>
                     </div>
                   </form>
                 ) : (
                   <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium mb-1">Full Name</h3>
-                        <p className="text-gray-900 text-lg">{userProfile?.displayName || 'Not provided'}</p>
+                      <div className="bg-gradient-to-r from-sky-50 to-mint-50 p-4 rounded-2xl">
+                        <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                          <span>👤</span> Full Name
+                        </h3>
+                        <p className="text-gray-900 text-xl font-bold">{userProfile?.displayName || 'Not provided'}</p>
                       </div>
                       
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium mb-1">Email Address</h3>
-                        <p className="text-gray-900 text-lg">{userProfile?.email || 'Not provided'}</p>
+                      <div className="bg-gradient-to-r from-sky-50 to-mint-50 p-4 rounded-2xl">
+                        <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                          <span>📧</span> Email Address
+                        </h3>
+                        <p className="text-gray-900 text-xl font-bold">{userProfile?.email || 'Not provided'}</p>
                       </div>
                       
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium mb-1">Phone Number</h3>
-                        <p className="text-gray-900 text-lg">{userProfile?.phone || 'Not provided'}</p>
+                      <div className="bg-gradient-to-r from-sky-50 to-mint-50 p-4 rounded-2xl">
+                        <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                          <span>📱</span> Phone Number
+                        </h3>
+                        <p className="text-gray-900 text-xl font-bold">{userProfile?.phone || 'Not provided'}</p>
                       </div>
                       
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium mb-1">Member Since</h3>
-                        <p className="text-gray-900 text-lg">
+                      <div className="bg-gradient-to-r from-sky-50 to-mint-50 p-4 rounded-2xl">
+                        <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                          <span>📅</span> Member Since
+                        </h3>
+                        <p className="text-gray-900 text-xl font-bold">
                           {userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 'Unknown'}
                         </p>
                       </div>
@@ -252,9 +260,9 @@ export default function ParentProfile() {
                     
                     <button
                       onClick={() => setEditing(true)}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                      className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                     >
-                      Edit Profile
+                      <span>✏️</span> Edit Profile
                     </button>
                   </div>
                 )}
@@ -262,27 +270,37 @@ export default function ParentProfile() {
             </div>
             
             {/* Additional Information Section */}
-            <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Account Information</h2>
+            <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-3xl">ℹ️</span> Account Information
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium mb-1">Account Status</h3>
-                  <p className="text-gray-900">Active</p>
+                <div className="bg-gradient-to-r from-green-50 to-mint-50 p-4 rounded-2xl">
+                  <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                    <span>✅</span> Account Status
+                  </h3>
+                  <p className="text-gray-900 text-lg font-bold">Active 🎉</p>
                 </div>
                 
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium mb-1">Role</h3>
-                  <p className="text-gray-900">Parent</p>
+                <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-4 rounded-2xl">
+                  <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                    <span>👨‍👩‍👧</span> Role
+                  </h3>
+                  <p className="text-gray-900 text-lg font-bold">Parent ⭐</p>
                 </div>
                 
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium mb-1">Last Login</h3>
-                  <p className="text-gray-900">Today</p>
+                <div className="bg-gradient-to-r from-purple-50 to-lavender-50 p-4 rounded-2xl">
+                  <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                    <span>🕐</span> Last Login
+                  </h3>
+                  <p className="text-gray-900 text-lg font-bold">Today 👋</p>
                 </div>
                 
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium mb-1">Security</h3>
-                  <p className="text-gray-900">Password set</p>
+                <div className="bg-gradient-to-r from-orange-50 to-sunshine-50 p-4 rounded-2xl">
+                  <h3 className="text-gray-500 text-sm font-bold mb-1 flex items-center gap-1">
+                    <span>🔒</span> Security
+                  </h3>
+                  <p className="text-gray-900 text-lg font-bold">Password set ✅</p>
                 </div>
               </div>
             </div>

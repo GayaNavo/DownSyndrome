@@ -4,7 +4,7 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 251, 245;
   --background-end-rgb: 255, 255, 255;
 }
 
@@ -22,5 +22,104 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Child-friendly playful styles */
+@layer components {
+  .btn-playful {
+    @apply px-6 py-3 rounded-full font-bold text-white shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95;
+  }
+  
+  .card-playful {
+    @apply bg-white rounded-3xl shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  .section-playful {
+    @apply rounded-3xl p-8;
+  }
+  
+  .gradient-sky {
+    @apply bg-gradient-to-br from-sky-300 via-sky-400 to-sky-500;
+  }
+  
+  .gradient-mint {
+    @apply bg-gradient-to-br from-mint-300 via-mint-400 to-mint-500;
+  }
+  
+  .gradient-lavender {
+    @apply bg-gradient-to-br from-lavender-300 via-lavender-400 to-lavender-500;
+  }
+  
+  .gradient-sunshine {
+    @apply bg-gradient-to-br from-sunshine-300 via-sunshine-400 to-sunshine-500;
+  }
+  
+  .gradient-coral {
+    @apply bg-gradient-to-br from-coral-300 via-coral-400 to-coral-500;
+  }
+  
+  .gradient-rainbow {
+    @apply bg-gradient-to-r from-sky-400 via-mint-400 via-lavender-400 to-sunshine-400;
+  }
+}
+
+/* Floating shapes animation */
+@keyframes float-shape {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes float-shape-reverse {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(20px) rotate(-5deg);
+  }
+}
+
+@keyframes blob {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  50% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+}
+
+.animate-float-shape {
+  animation: float-shape 6s ease-in-out infinite;
+}
+
+.animate-float-shape-reverse {
+  animation: float-shape-reverse 7s ease-in-out infinite;
+}
+
+.animate-blob {
+  animation: blob 8s ease-in-out infinite;
+}
+
+/* Custom scrollbar for child-friendly feel */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #7dd3fc 0%, #86efac 50%, #d8b4fe 100%);
+  border-radius: 10px;
+  border: 3px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #38bdf8 0%, #4ade80 50%, #c084fc 100%);
 }
 

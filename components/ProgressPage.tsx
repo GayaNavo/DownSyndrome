@@ -7,6 +7,24 @@ import AppHeader from './AppHeader'
 import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData, getProgressByChild, ProgressData, UpcomingEvent, createUpcomingEvent, updateUpcomingEvent, deleteUpcomingEvent, getUpcomingEventsByChild } from '@/lib/firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
 
+const eventTypeEmojis: Record<string, string> = {
+  appointment: '🏥',
+  assessment: '📊',
+  therapy: '🏃',
+  milestone: '🏆',
+  follow_up: '🔄',
+  other: '📅'
+}
+
+const eventTypeColors: Record<string, string> = {
+  appointment: 'bg-blue-100 text-blue-800 border-blue-200',
+  assessment: 'bg-purple-100 text-purple-800 border-purple-200',
+  therapy: 'bg-green-100 text-green-800 border-green-200',
+  milestone: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  follow_up: 'bg-orange-100 text-orange-800 border-orange-200',
+  other: 'bg-gray-100 text-gray-800 border-gray-200'
+}
+
 export default function ProgressPage() {
   const { currentUser } = useAuth()
   const [children, setChildren] = useState<ChildData[]>([])
@@ -198,34 +216,34 @@ export default function ProgressPage() {
     
     if (latestWeight !== null && latestWeight !== undefined) {
       if (weightChange.isPositive) {
-        insights.push(`Great progress! ${selectedChild.name}'s weight has increased by ${weightChange.value.toFixed(1)}% over this period.`);
+        insights.push(`🎉 Great progress! ${selectedChild.name}'s weight has increased by ${weightChange.value.toFixed(1)}% over this period.`);
       } else {
-        insights.push(`${selectedChild.name}'s weight has decreased by ${weightChange.value.toFixed(1)}%. Consider consulting with your healthcare provider if you have concerns.`);
+        insights.push(`📊 ${selectedChild.name}'s weight has decreased by ${weightChange.value.toFixed(1)}%. Consider consulting with your healthcare provider if you have concerns.`);
       }
     }
     
     if (latestHeight !== null && latestHeight !== undefined) {
       if (heightChange.isPositive) {
-        insights.push(`Height has grown by ${heightChange.value.toFixed(1)}%, showing healthy development.`);
+        insights.push(`📏 Height has grown by ${heightChange.value.toFixed(1)}%, showing healthy development.`);
       } else {
-        insights.push(`Height measurement shows a ${heightChange.value.toFixed(1)}% variation. This is normal for growing children.`);
+        insights.push(`📊 Height measurement shows a ${heightChange.value.toFixed(1)}% variation. This is normal for growing children.`);
       }
     }
     
     if (latestSleep !== null && latestSleep !== undefined) {
       if (sleepChange.isPositive) {
-        insights.push(`Sleep patterns have improved with a ${sleepChange.value.toFixed(1)}% increase in daily sleep hours.`);
+        insights.push(`😴 Sleep patterns have improved with a ${sleepChange.value.toFixed(1)}% increase in daily sleep hours.`);
       } else {
-        insights.push(`Sleep hours have decreased by ${sleepChange.value.toFixed(1)}%. Ensure ${selectedChild.name} gets adequate rest for healthy development.`);
+        insights.push(`😴 Sleep hours have decreased by ${sleepChange.value.toFixed(1)}%. Ensure ${selectedChild.name} gets adequate rest for healthy development.`);
       }
     }
     
     if (milestones.length > 0) {
-      insights.push(`${selectedChild.name} has achieved ${milestones.length} milestone${milestones.length > 1 ? 's' : ''} recently. Keep up the great work!`);
+      insights.push(`🏆 ${selectedChild.name} has achieved ${milestones.length} milestone${milestones.length > 1 ? 's' : ''} recently. Keep up the great work!`);
     }
     
     if (insights.length === 0) {
-      return `Start tracking ${selectedChild.name}'s health metrics to see personalized insights. Record weight, height, sleep patterns, and developmental milestones to monitor growth and development.`;
+      return `🌟 Start tracking ${selectedChild.name}'s health metrics to see personalized insights. Record weight, height, sleep patterns, and developmental milestones to monitor growth and development.`;
     }
     
     return insights.join(' ');
@@ -293,14 +311,15 @@ export default function ProgressPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="progress" />
           <div className="flex-1 ml-64">
             <main className="p-6">
               <div className="text-center py-12">
-                <p className="text-gray-600">Loading...</p>
+                <span className="text-6xl animate-bounce inline-block">📊</span>
+                <p className="text-gray-600 mt-4 text-xl">Loading your child&apos;s progress...</p>
               </div>
             </main>
           </div>
@@ -311,16 +330,17 @@ export default function ProgressPage() {
 
   if (!selectedChild) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="progress" />
           <div className="flex-1 ml-64">
             <main className="p-6">
               <div className="text-center py-12">
-                <p className="text-gray-600 mb-4">No children registered yet.</p>
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors">
-                  + Add Your First Child
+                <span className="text-6xl">👶</span>
+                <p className="text-gray-600 mb-4 text-xl">No children registered yet.</p>
+                <button className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                  ✨ Add Your First Child
                 </button>
               </div>
             </main>
@@ -331,7 +351,7 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -342,42 +362,49 @@ export default function ProgressPage() {
           {/* Main Content Area */}
           <main className="p-6">
           {/* Page Banner Image */}
-          <div className="mb-8 rounded-2xl overflow-hidden h-48 relative shadow-lg">
+          <div className="mb-8 rounded-3xl overflow-hidden h-56 relative shadow-xl">
             <img 
               src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=2000" 
               alt="Growth Tracking" 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 to-transparent flex items-center px-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-sky-900/70 to-transparent flex items-center px-8">
               <div className="max-w-md">
-                <h2 className="text-2xl font-bold text-white mb-2">Growth & Development</h2>
-                <p className="text-blue-50 text-sm">Monitor your child's journey with detailed health metrics and milestone tracking.</p>
+                <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                  <span className="text-4xl">🌱</span>
+                  Growth & Development
+                </h2>
+                <p className="text-sky-100 text-lg">Monitor your child&apos;s journey with detailed health metrics and milestone tracking! 🎯</p>
               </div>
             </div>
           </div>
 
           {/* Title and Time Period Selector */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{selectedChild.name}'s Dashboard</h1>
-              <p className="text-gray-600">Here's a detailed overview of the latest progress.</p>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                <span className="text-5xl">👶</span>
+                {selectedChild.name}&apos;s Dashboard
+              </h1>
+              <p className="text-gray-600 text-lg">Here&apos;s a detailed overview of the latest progress! 🌟</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 bg-white p-2 rounded-2xl shadow-lg">
               {[
-                { id: '7days', label: '7 Days' },
-                { id: '30days', label: '30 Days' },
-                { id: '6months', label: '6 Months' },
-                { id: 'alltime', label: 'All Time' },
+                { id: '7days', label: '7 Days', emoji: '📅' },
+                { id: '30days', label: '30 Days', emoji: '📆' },
+                { id: '6months', label: '6 Months', emoji: '🗓️' },
+                { id: 'alltime', label: 'All Time', emoji: '⏰' },
               ].map((period) => (
                 <button
                   key={period.id}
                   onClick={() => setTimePeriod(period.id as any)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-5 py-2 rounded-xl font-bold transition-all ${
                     timePeriod === period.id
-                      ? 'bg-blue-600 text-white hover:bg-blue-800'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      ? 'bg-gradient-to-r from-sky-400 to-mint-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
+                  <span className="mr-1">{period.emoji}</span>
                   {period.label}
                 </button>
               ))}
@@ -385,18 +412,21 @@ export default function ProgressPage() {
           </div>
 
           {/* Metrics Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Weight Card */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-4xl">⚖️</span>
+                <h3 className="text-xl font-bold text-gray-900">Weight</h3>
+              </div>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">{latestWeight !== null && latestWeight !== undefined ? `${Number(latestWeight).toFixed(1)} kg` : 'No data'}</p>
+                <p className="text-4xl font-bold text-gray-900 mb-1">{latestWeight !== null && latestWeight !== undefined ? `${Number(latestWeight).toFixed(1)} kg` : 'No data'}</p>
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-bold ${
                     weightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
-                  {weightChange.isPositive ? '+' : '-'}
+                  {weightChange.isPositive ? '📈 +' : '📉 -'}
                   {weightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
@@ -481,16 +511,19 @@ export default function ProgressPage() {
             </div>
 
             {/* Height Card */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Height</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-4xl">📏</span>
+                <h3 className="text-xl font-bold text-gray-900">Height</h3>
+              </div>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">{latestHeight !== null && latestHeight !== undefined ? `${Number(latestHeight).toFixed(1)} cm` : 'No data'}</p>
+                <p className="text-4xl font-bold text-gray-900 mb-1">{latestHeight !== null && latestHeight !== undefined ? `${Number(latestHeight).toFixed(1)} cm` : 'No data'}</p>
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-bold ${
                     heightChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
-                  {heightChange.isPositive ? '+' : '-'}
+                  {heightChange.isPositive ? '📈 +' : '📉 -'}
                   {heightChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
@@ -575,16 +608,19 @@ export default function ProgressPage() {
             </div>
 
             {/* Avg. Daily Sleep Card */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Avg. Daily Sleep</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-4xl">😴</span>
+                <h3 className="text-xl font-bold text-gray-900">Daily Sleep</h3>
+              </div>
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900 mb-1">{latestSleep !== null && latestSleep !== undefined ? `${Number(latestSleep).toFixed(1)} hrs` : 'No data'}</p>
+                <p className="text-4xl font-bold text-gray-900 mb-1">{latestSleep !== null && latestSleep !== undefined ? `${Number(latestSleep).toFixed(1)} hrs` : 'No data'}</p>
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-bold ${
                     sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'
                   }`}
                 >
-                  {sleepChange.isPositive ? '+' : '-'}
+                  {sleepChange.isPositive ? '📈 +' : '📉 -'}
                   {sleepChange.value.toFixed(1)}% in the last {timePeriod === '7days' ? '7 days' : timePeriod === '30days' ? '30 days' : timePeriod === '6months' ? '6 months' : 'time period'}
                 </p>
               </div>
@@ -670,104 +706,68 @@ export default function ProgressPage() {
           </div>
 
           {/* Summary & Insights and Recent Milestones Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Summary & Insights Card */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                <h3 className="text-lg font-semibold text-gray-900">Summary & Insights</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">💡</span>
+                <h3 className="text-xl font-bold text-gray-900">Summary & Insights</h3>
               </div>
-              <p className="text-gray-700 mb-4 leading-relaxed">
+              <p className="text-gray-700 mb-6 leading-relaxed text-lg">
                 {generateInsights()}
               </p>
               <button
                 onClick={openReportModal}
-                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-6 py-3 rounded-full font-bold hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
               >
-                View Detailed Report
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <span>📊</span> View Detailed Report
               </button>
             </div>
 
             {/* Recent Milestones Card */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                  />
-                </svg>
-                <h3 className="text-lg font-semibold text-gray-900">Recent Milestones</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🏆</span>
+                <h3 className="text-xl font-bold text-gray-900">Recent Milestones</h3>
               </div>
               <div className="space-y-3">
                 {milestones.length > 0 ? (
                   milestones.slice(0, 3).map((milestone) => (
-                    <div key={milestone.id} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                    <div key={milestone.id} className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-mint-50 rounded-2xl">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 text-white">
+                        <span className="text-lg">✓</span>
                       </div>
-                      <span className="text-gray-700">{milestone.title}</span>
+                      <span className="text-gray-700 font-medium">{milestone.title}</span>
                     </div>
                   ))
                 ) : (
                   <>
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-mint-50 rounded-2xl">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 text-white">
+                        <span className="text-lg">✓</span>
                       </div>
-                      <span className="text-gray-700">Started to crawl</span>
+                      <span className="text-gray-700 font-medium">Started to crawl 🚼</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-mint-50 rounded-2xl">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 text-white">
+                        <span className="text-lg">✓</span>
                       </div>
-                      <span className="text-gray-700">Responds to name</span>
+                      <span className="text-gray-700 font-medium">Responds to name 👂</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0"></div>
-                      <span className="text-gray-700">Pulls up to stand</span>
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl">
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">○</span>
+                      </div>
+                      <span className="text-gray-500 font-medium">Pulls up to stand 🦵</span>
                     </div>
                   </>
                 )}
               </div>
               <a
                 href="/dashboard/milestones"
-                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 mt-4"
+                className="text-sky-600 hover:text-sky-700 font-bold inline-flex items-center gap-2 mt-4 text-lg"
               >
-                View All Milestones
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <span>🏆</span> View All Milestones →
               </a>
             </div>
           </div>
@@ -775,14 +775,15 @@ export default function ProgressPage() {
           {/* Upcoming Events Section */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
+              <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span className="text-4xl">📅</span>
+                Upcoming Events
+              </h2>
               <button
                 onClick={() => openEventModal()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-6 py-3 rounded-full font-bold hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+                <span className="text-xl">➕</span>
                 Add Event
               </button>
             </div>
@@ -792,37 +793,28 @@ export default function ProgressPage() {
                 {upcomingEvents.slice(0, 6).map((event) => (
                   <div
                     key={event.id}
-                    className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow"
+                    className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-l-4 border-sky-400 hover:shadow-xl transition-all hover:scale-105"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 mb-1">{event.title}</h3>
-                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                          event.type === 'appointment' ? 'bg-blue-100 text-blue-800' :
-                          event.type === 'assessment' ? 'bg-purple-100 text-purple-800' :
-                          event.type === 'therapy' ? 'bg-green-100 text-green-800' :
-                          event.type === 'milestone' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <h3 className="font-bold text-gray-900 mb-1 text-lg">{event.title}</h3>
+                        <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full border ${eventTypeColors[event.type]}`}>
+                          <span className="mr-1">{eventTypeEmojis[event.type]}</span>
                           {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                         </span>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => openEventModal(event)}
-                          className="text-gray-400 hover:text-blue-600"
+                          className="text-gray-400 hover:text-sky-500 text-xl"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
+                          ✏️
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id!)}
-                          className="text-gray-400 hover:text-red-600"
+                          className="text-gray-400 hover:text-red-500 text-xl"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          🗑️
                         </button>
                       </div>
                     </div>
@@ -831,23 +823,16 @@ export default function ProgressPage() {
                     )}
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                        <span className="text-lg">📅</span>
                         <span>{event.date.toDate().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <span className="text-lg">⏰</span>
                         <span>{event.date.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       {event.location && (
                         <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
+                          <span className="text-lg">📍</span>
                           <span className="truncate">{event.location}</span>
                         </div>
                       )}
@@ -856,19 +841,14 @@ export default function ProgressPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-gray-600 mb-4">No upcoming events scheduled</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-8 text-center border-2 border-white">
+                <span className="text-6xl">📅</span>
+                <p className="text-gray-600 mb-4 text-lg">No upcoming events scheduled</p>
                 <button
                   onClick={() => openEventModal()}
-                  className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                  className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-6 py-3 rounded-full font-bold hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2 mx-auto"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Your First Event
+                  <span>➕</span> Add Your First Event
                 </button>
               </div>
             )}
@@ -879,51 +859,55 @@ export default function ProgressPage() {
 
       {/* Detailed Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Detailed Progress Report</h3>
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-3xl">📊</span> Detailed Progress Report
+                </h3>
                 <button 
                   onClick={closeReportModal}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  ✕
                 </button>
               </div>
               
               <div className="space-y-6">
                 {/* Executive Summary */}
-                <div className="bg-blue-50 p-5 rounded-lg">
-                  <h4 className="font-bold text-blue-800 mb-2">Executive Summary</h4>
+                <div className="bg-gradient-to-r from-sky-100 to-mint-100 p-5 rounded-2xl border-2 border-sky-200">
+                  <h4 className="font-bold text-sky-800 mb-2 text-lg flex items-center gap-2">
+                    <span>💡</span> Executive Summary
+                  </h4>
                   <p className="text-gray-700">{generateInsights()}</p>
                 </div>
                 
                 {/* Health Data Summary */}
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-3">Health Data Summary</h4>
+                  <h4 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <span>💪</span> Health Data Summary
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">Weight</p>
-                      <p className="text-xl font-bold">{latestWeight ? `${latestWeight} kg` : 'No data'}</p>
-                      <p className={`text-sm ${weightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
-                        {weightChange.isPositive ? '+' : '-'}{weightChange.value.toFixed(1)}%
+                    <div className="bg-gradient-to-br from-sky-50 to-mint-50 p-4 rounded-2xl border-2 border-white shadow-md">
+                      <p className="text-sm text-gray-600 font-medium">⚖️ Weight</p>
+                      <p className="text-2xl font-bold">{latestWeight ? `${latestWeight} kg` : 'No data'}</p>
+                      <p className={`text-sm font-bold ${weightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {weightChange.isPositive ? '📈 +' : '📉 -'}{weightChange.value.toFixed(1)}%
                       </p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">Height</p>
-                      <p className="text-xl font-bold">{latestHeight ? `${latestHeight} cm` : 'No data'}</p>
-                      <p className={`text-sm ${heightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
-                        {heightChange.isPositive ? '+' : '-'}{heightChange.value.toFixed(1)}%
+                    <div className="bg-gradient-to-br from-sky-50 to-mint-50 p-4 rounded-2xl border-2 border-white shadow-md">
+                      <p className="text-sm text-gray-600 font-medium">📏 Height</p>
+                      <p className="text-2xl font-bold">{latestHeight ? `${latestHeight} cm` : 'No data'}</p>
+                      <p className={`text-sm font-bold ${heightChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {heightChange.isPositive ? '📈 +' : '📉 -'}{heightChange.value.toFixed(1)}%
                       </p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">Sleep</p>
-                      <p className="text-xl font-bold">{latestSleep ? `${latestSleep} hrs` : 'No data'}</p>
-                      <p className={`text-sm ${sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
-                        {sleepChange.isPositive ? '+' : '-'}{sleepChange.value.toFixed(1)}%
+                    <div className="bg-gradient-to-br from-sky-50 to-mint-50 p-4 rounded-2xl border-2 border-white shadow-md">
+                      <p className="text-sm text-gray-600 font-medium">😴 Sleep</p>
+                      <p className="text-2xl font-bold">{latestSleep ? `${latestSleep} hrs` : 'No data'}</p>
+                      <p className={`text-sm font-bold ${sleepChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                        {sleepChange.isPositive ? '📈 +' : '📉 -'}{sleepChange.value.toFixed(1)}%
                       </p>
                     </div>
                   </div>
@@ -931,47 +915,51 @@ export default function ProgressPage() {
                 
                 {/* Milestones */}
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-3">Recent Milestones</h4>
+                  <h4 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <span>🏆</span> Recent Milestones
+                  </h4>
                   <div className="space-y-2">
                     {milestones.length > 0 ? (
                       milestones.slice(0, 5).map((milestone) => (
-                        <div key={milestone.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div key={milestone.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-mint-50 rounded-2xl border-2 border-white">
                           <div>
-                            <p className="font-medium">{milestone.title}</p>
+                            <p className="font-bold">{milestone.title}</p>
                             <p className="text-sm text-gray-600">{milestone.description}</p>
                           </div>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 font-medium">
                             {milestone.achievedAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500 text-center py-4">No milestones recorded yet</p>
+                      <p className="text-gray-500 text-center py-4">No milestones recorded yet 📝</p>
                     )}
                   </div>
                 </div>
                 
                 {/* Progress Tracking */}
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-3">Progress Tracking</h4>
+                  <h4 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                    <span>📈</span> Progress Tracking
+                  </h4>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gradient-to-r from-sky-50 to-mint-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">📊 Category</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">⭐ Score</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">📅 Date</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">📝 Notes</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {progressData.length > 0 ? (
                           progressData.slice(0, 5).map((progress) => (
                             <tr key={progress.id}>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{progress.category}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">{progress.category}</td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                  {progress.score}/10
+                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-gradient-to-r from-sky-100 to-mint-100 text-sky-800 border border-sky-200">
+                                  ⭐ {progress.score}/10
                                 </span>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -982,7 +970,7 @@ export default function ProgressPage() {
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={4} className="px-4 py-4 text-center text-sm text-gray-500">No progress data recorded yet</td>
+                            <td colSpan={4} className="px-4 py-4 text-center text-sm text-gray-500">No progress data recorded yet 📝</td>
                           </tr>
                         )}
                       </tbody>
@@ -993,7 +981,7 @@ export default function ProgressPage() {
                 {/* Report Generation Info */}
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-500 text-center">
-                    Report generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    📅 Report generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
               </div>
@@ -1004,29 +992,28 @@ export default function ProgressPage() {
 
       {/* Event Management Modal */}
       {showEventModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSaveEvent}>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <span className="text-3xl">{editingEvent ? '✏️' : '➕'}</span>
                     {editingEvent ? 'Edit Event' : 'Add New Event'}
                   </h3>
                   <button
                     type="button"
                     onClick={closeEventModal}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    ✕
                   </button>
                 </div>
                 
                 <div className="space-y-4">
                   {/* Event Title */}
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">
                       Event Title *
                     </label>
                     <input
@@ -1034,36 +1021,36 @@ export default function ProgressPage() {
                       id="title"
                       value={eventForm.title}
                       onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Speech Therapy Appointment"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
+                      placeholder="e.g., Speech Therapy Appointment 🗣️"
                       required
                     />
                   </div>
 
                   {/* Event Type */}
                   <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="type" className="block text-sm font-bold text-gray-700 mb-2">
                       Event Type *
                     </label>
                     <select
                       id="type"
                       value={eventForm.type}
                       onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as any })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
                       required
                     >
-                      <option value="appointment">Appointment</option>
-                      <option value="assessment">Assessment</option>
-                      <option value="therapy">Therapy Session</option>
-                      <option value="milestone">Milestone</option>
-                      <option value="follow_up">Follow-up</option>
-                      <option value="other">Other</option>
+                      <option value="appointment">🏥 Appointment</option>
+                      <option value="assessment">📊 Assessment</option>
+                      <option value="therapy">🏃 Therapy Session</option>
+                      <option value="milestone">🏆 Milestone</option>
+                      <option value="follow_up">🔄 Follow-up</option>
+                      <option value="other">📅 Other</option>
                     </select>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="description" className="block text-sm font-bold text-gray-700 mb-2">
                       Description
                     </label>
                     <textarea
@@ -1071,36 +1058,36 @@ export default function ProgressPage() {
                       value={eventForm.description}
                       onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Brief description of the event"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
+                      placeholder="Brief description of the event... 📝"
                     />
                   </div>
 
                   {/* Date and Time */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                        Date *
+                      <label htmlFor="date" className="block text-sm font-bold text-gray-700 mb-2">
+                        📅 Date *
                       </label>
                       <input
                         type="date"
                         id="date"
                         value={eventForm.date}
                         onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
                         required
                       />
                     </div>
                     <div>
-                      <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
-                        Time *
+                      <label htmlFor="time" className="block text-sm font-bold text-gray-700 mb-2">
+                        ⏰ Time *
                       </label>
                       <input
                         type="time"
                         id="time"
                         value={eventForm.time}
                         onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
                         required
                       />
                     </div>
@@ -1108,16 +1095,16 @@ export default function ProgressPage() {
 
                   {/* Location */}
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                      Location
+                    <label htmlFor="location" className="block text-sm font-bold text-gray-700 mb-2">
+                      📍 Location
                     </label>
                     <input
                       type="text"
                       id="location"
                       value={eventForm.location}
                       onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Pediatric Clinic, Room 101"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all"
+                      placeholder="e.g., Pediatric Clinic, Room 101 🏥"
                     />
                   </div>
                 </div>
@@ -1127,15 +1114,15 @@ export default function ProgressPage() {
                   <button
                     type="button"
                     onClick={closeEventModal}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-sky-400 to-mint-400 text-white rounded-2xl hover:from-sky-500 hover:to-mint-500 transition-all font-bold shadow-lg"
                   >
-                    {editingEvent ? 'Update Event' : 'Create Event'}
+                    {editingEvent ? '✨ Update Event' : '✨ Create Event'}
                   </button>
                 </div>
               </div>

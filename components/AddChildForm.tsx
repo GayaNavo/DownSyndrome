@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
 import AppHeader from './AppHeader';
-import { createChildDocument, ChildData, getChildDocument } from '@/lib/firebase/firestore';
+import { createChildDocument, ChildData, getChildDocument, updateChildDocument } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
 interface FormData {
   name: string;
   dateOfBirth: string;
+  age?: number;
   developmentalAge: string;
   lastMilestone: string;
   notes: string;
@@ -20,12 +21,15 @@ export default function AddChildForm() {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     dateOfBirth: '',
+    age: undefined,
     developmentalAge: '',
     lastMilestone: '',
     notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [hasChild, setHasChild] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [childId, setChildId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{type: string, message: string} | null>(null);
 
   useEffect(() => {
@@ -39,27 +43,62 @@ export default function AddChildForm() {
     
     try {
       const child = await getChildDocument(currentUser.uid);
-      setHasChild(!!child);
-    } catch (error) {
+      if (child) {
+        setHasChild(true);
+        setChildId(child.id || currentUser.uid);
+        // Pre-fill form with existing data
+        setFormData({
+          name: child.name,
+          dateOfBirth: child.dateOfBirth.toDate().toISOString().split('T')[0],
+          age: child.age,
+          developmentalAge: child.developmentalAge || '',
+          lastMilestone: child.lastMilestone || '',
+          notes: '',
+        });
+        setIsEditMode(true);
+      }
+    } catch (error: any) {
       console.error('Error checking if child exists:', error);
+      showNotification(
+        'error',
+        `❌ Failed to Load Data: ${error.message || 'Unable to check existing child information'}`
+      );
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // If changing date of birth, calculate and update age
+    if (name === 'dateOfBirth' && value) {
+      const calculatedAge = calculateAge(value);
+      setFormData(prev => ({ ...prev, [name]: value, age: calculatedAge }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!currentUser) {
-      showNotification('error', 'You must be logged in to add a child');
+      showNotification('error', '❌ Authentication Error: You must be logged in to add a child');
       return;
     }
     
-    if (hasChild) {
-      showNotification('error', 'You can only manage one child. Please update the existing child instead.');
+    if (hasChild && !isEditMode) {
+      showNotification('error', '⚠️ Limit Reached: You can only manage one child. Please update the existing child instead.');
+      return;
+    }
+
+    // Validation
+    if (!formData.name.trim()) {
+      showNotification('error', '⚠️ Validation Error: Child\'s name is required');
+      return;
+    }
+    
+    if (!formData.dateOfBirth) {
+      showNotification('error', '⚠️ Validation Error: Date of birth is required');
       return;
     }
 
@@ -69,35 +108,52 @@ export default function AddChildForm() {
       // Convert date of birth to Timestamp
       const dateOfBirthTimestamp = Timestamp.fromDate(new Date(formData.dateOfBirth));
       
-      // Prepare child data
-      const childData: Omit<ChildData, 'id' | 'createdAt' | 'updatedAt'> = {
-        parentId: currentUser.uid,
-        name: formData.name,
-        age: calculateAge(formData.dateOfBirth),
-        dateOfBirth: dateOfBirthTimestamp,
-        developmentalAge: formData.developmentalAge || undefined,
-        lastMilestone: formData.lastMilestone || undefined,
-      };
+      if (isEditMode && childId) {
+        // UPDATE operation
+        const childData: Partial<ChildData> = {
+          name: formData.name,
+          age: formData.age || calculateAge(formData.dateOfBirth),
+          dateOfBirth: dateOfBirthTimestamp,
+          developmentalAge: formData.developmentalAge || undefined,
+          lastMilestone: formData.lastMilestone || undefined,
+        };
 
-      // Create child document in Firestore
-      await createChildDocument(childData);
-      
-      showNotification('success', 'Child added successfully!');
-      
-      // Reset form
-      setFormData({
-        name: '',
-        dateOfBirth: '',
-        developmentalAge: '',
-        lastMilestone: '',
-        notes: '',
-      });
-      
-      // Update hasChild state
-      setHasChild(true);
-    } catch (error) {
-      console.error('Error adding child:', error);
-      showNotification('error', 'Failed to add child. Please try again.');
+        await updateChildDocument(childId, childData);
+        showNotification('success', '✅ Success! Child profile has been updated successfully! 🎉');
+      } else {
+        // CREATE operation
+        const childData: Omit<ChildData, 'id' | 'createdAt' | 'updatedAt'> = {
+          parentId: currentUser.uid,
+          name: formData.name,
+          age: formData.age || calculateAge(formData.dateOfBirth),
+          dateOfBirth: dateOfBirthTimestamp,
+          developmentalAge: formData.developmentalAge || undefined,
+          lastMilestone: formData.lastMilestone || undefined,
+        };
+
+        await createChildDocument(childData);
+        showNotification('success', '✅ Success! Child profile has been created successfully! Welcome to the family! 🎉');
+        
+        // Reset form after creation
+        setFormData({
+          name: '',
+          dateOfBirth: '',
+          age: undefined,
+          developmentalAge: '',
+          lastMilestone: '',
+          notes: '',
+        });
+        
+        setHasChild(true);
+        setIsEditMode(true);
+        setChildId(currentUser.uid);
+      }
+    } catch (error: any) {
+      console.error('Error saving child:', error);
+      showNotification(
+        'error', 
+        `❌ Failed to Save: ${error.message || 'An unexpected error occurred. Please try again.'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -124,7 +180,7 @@ export default function AddChildForm() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="children" />
@@ -133,21 +189,51 @@ export default function AddChildForm() {
           
           <main className="p-6">
           {notification && (
-            <div className={`mb-6 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mb-6 p-4 rounded-2xl shadow-lg animate-bounce ${
+              notification.type === 'success' 
+                ? 'bg-gradient-to-r from-mint-100 to-sky-100 text-green-800 border-2 border-mint-200' 
+                : notification.type === 'info'
+                  ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-2 border-blue-200'
+                  : 'bg-gradient-to-r from-red-100 to-coral-100 text-red-800 border-2 border-red-200'
+            }`}>
+              <span className="text-xl mr-2">
+                {notification.type === 'success' 
+                  ? '🎉' 
+                  : notification.type === 'info'
+                    ? 'ℹ️'
+                    : '⚠️'}
+              </span>
               {notification.message}
             </div>
           )}
           
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-xl shadow-md p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Child Information</h2>
+            {/* Fun Header */}
+            <div className="text-center mb-8">
+              <div className="inline-block p-4 rounded-full bg-gradient-to-br from-sky-200 to-mint-200 mb-4 animate-float">
+                <span className="text-5xl">👶</span>
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-500 via-mint-500 to-lavender-500 bg-clip-text text-transparent mb-2">
+                {isEditMode ? 'Update Your Little Star! ⭐' : 'Add Your Little Star! ⭐'}
+              </h1>
+              <p className="text-gray-600 text-lg">
+                {isEditMode 
+                  ? "Update your child's information below! ✏️" 
+                  : "Let's create a special profile for your amazing child!"}
+              </p>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 border-2 border-white">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <span className="text-3xl">📝</span> Child Information
+              </h2>
               
               {!hasChild ? (
                 <form onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="md:col-span-2">
-                      <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-                        Child's Full Name <span className="text-red-500">*</span>
+                      <label htmlFor="name" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>👤</span> Child&apos;s Full Name <span className="text-coral-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -156,14 +242,14 @@ export default function AddChildForm() {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter child's full name"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Enter your child's magical name ✨"
                       />
                     </div>
                     
                     <div>
-                      <label htmlFor="dateOfBirth" className="block text-gray-700 font-medium mb-2">
-                        Date of Birth <span className="text-red-500">*</span>
+                      <label htmlFor="dateOfBirth" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>🎂</span> Date of Birth <span className="text-coral-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -172,18 +258,28 @@ export default function AddChildForm() {
                         value={formData.dateOfBirth}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                       />
-                      {formData.dateOfBirth && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          Calculated age: {calculateAge(formData.dateOfBirth)} years
-                        </p>
-                      )}
                     </div>
                     
                     <div>
-                      <label htmlFor="developmentalAge" className="block text-gray-700 font-medium mb-2">
-                        Developmental Age
+                      <label htmlFor="age" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>🎈</span> Current Age
+                      </label>
+                      <input
+                        type="text"
+                        id="age"
+                        name="age"
+                        value={formData.age !== undefined ? `${formData.age} years old` : 'Enter date of birth first'}
+                        readOnly
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl bg-gray-50 text-gray-600 cursor-not-allowed text-lg"
+                        disabled
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="developmentalAge" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>📏</span> Developmental Age
                       </label>
                       <input
                         type="text"
@@ -191,14 +287,14 @@ export default function AddChildForm() {
                         name="developmentalAge"
                         value={formData.developmentalAge}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="e.g., 2 years 3 months"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="e.g., 2 years 3 months 🌟"
                       />
                     </div>
                     
                     <div className="md:col-span-2">
-                      <label htmlFor="lastMilestone" className="block text-gray-700 font-medium mb-2">
-                        Last Achieved Milestone
+                      <label htmlFor="lastMilestone" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>🏆</span> Last Achieved Milestone
                       </label>
                       <input
                         type="text"
@@ -206,14 +302,14 @@ export default function AddChildForm() {
                         name="lastMilestone"
                         value={formData.lastMilestone}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="e.g., Walking independently"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="e.g., First steps, First words, High five! 🎉"
                       />
                     </div>
                     
                     <div className="md:col-span-2">
-                      <label htmlFor="notes" className="block text-gray-700 font-medium mb-2">
-                        Additional Notes
+                      <label htmlFor="notes" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
+                        <span>📝</span> Special Notes
                       </label>
                       <textarea
                         id="notes"
@@ -221,8 +317,8 @@ export default function AddChildForm() {
                         value={formData.notes}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Any additional information about your child..."
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Tell us something special about your child... 💕"
                       />
                     </div>
                   </div>
@@ -231,69 +327,104 @@ export default function AddChildForm() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`px-6 py-2 rounded-lg font-medium ${
+                      className={`px-8 py-3 rounded-full font-bold text-lg shadow-lg transform transition-all hover:scale-105 ${
                         loading 
-                          ? 'bg-blue-400 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      } text-white transition-colors`}
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : isEditMode
+                            ? 'bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white'
+                            : 'bg-gradient-to-r from-sky-400 to-mint-400 hover:from-sky-500 hover:to-mint-500 text-white'
+                      }`}
                     >
-                      {loading ? 'Adding Child...' : 'Add Child'}
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="animate-spin">⏳</span> Saving...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <span>{isEditMode ? '✏️' : '✨'}</span> {isEditMode ? 'Update My Child!' : 'Add My Child!'}
+                        </span>
+                      )}
                     </button>
                     
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData({
-                          name: '',
-                          dateOfBirth: '',
-                          developmentalAge: '',
-                          lastMilestone: '',
-                          notes: '',
-                        });
-                      }}
-                      className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                    >
-                      Clear Form
-                    </button>
+                    {isEditMode && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Reset to view mode without clearing data
+                          showNotification('success', '✅ Edit mode cancelled. Current data preserved.');
+                        }}
+                        className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-50 transition-all hover:border-gray-400"
+                      >
+                        ❌ Cancel Edit
+                      </button>
+                    )}
+                    
+                    {!isEditMode && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData({
+                            name: '',
+                            dateOfBirth: '',
+                            age: undefined,
+                            developmentalAge: '',
+                            lastMilestone: '',
+                            notes: '',
+                          });
+                          showNotification('info', '🧹 Form cleared! Ready to start fresh.');
+                        }}
+                        className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-50 transition-all hover:border-gray-400"
+                      >
+                        🔄 Clear Form
+                      </button>
+                    )}
                   </div>
                 </form>
               ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
+                <div className="text-center py-12">
+                  <div className="w-24 h-24 bg-gradient-to-br from-sky-200 to-mint-200 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <span className="text-5xl">🌟</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Child Already Registered</h3>
-                  <p className="text-gray-600 mb-6">You can only manage one child at a time. Please visit the dashboard to view and update your child's information.</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Child Already Registered! 🎉</h3>
+                  <p className="text-gray-600 mb-6 text-lg">You can only manage one child at a time. Visit the dashboard to see your little star&apos;s progress!</p>
                   <a
                     href="/dashboard"
-                    className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                    className="inline-block bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    Go to Dashboard
+                    🚀 Go to Dashboard
                   </a>
                 </div>
               )}
             </div>
             
-            <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Tips for Adding Your Child</h3>
-              <ul className="list-disc pl-5 text-blue-700 space-y-1">
-                <li>Provide an accurate date of birth to track developmental milestones properly</li>
-                <li>Include any known developmental age if assessed by a professional</li>
-                <li>Record the last milestone achieved to establish a baseline for tracking</li>
-                <li>Add any relevant notes that might help with care coordination</li>
+            {/* Tips Card */}
+            <div className="mt-8 bg-gradient-to-r from-lavender-100 to-sky-100 border-2 border-lavender-200 rounded-3xl p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-lavender-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">💡</span> Helpful Tips for Parents
+              </h3>
+              <ul className="space-y-3 text-lavender-700">
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">🎯</span>
+                  <span>Provide an accurate date of birth to track developmental milestones properly</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">📊</span>
+                  <span>Include any known developmental age if assessed by a professional</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">🏅</span>
+                  <span>Record the last milestone achieved to establish a baseline for tracking</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-xl">💝</span>
+                  <span>Add any relevant notes that might help with care coordination</span>
+                </li>
               </ul>
             </div>
           </div>
         </main>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }

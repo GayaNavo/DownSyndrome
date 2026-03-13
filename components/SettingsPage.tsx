@@ -14,6 +14,12 @@ import {
 } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
+const tabEmojis = {
+  profile: '👤',
+  child: '👶',
+  security: '🔒'
+}
+
 export default function SettingsPage() {
   const { currentUser, resetPassword } = useAuth();
   const [userProfile, setUserProfile] = useState<UserData | null>(null);
@@ -86,7 +92,7 @@ export default function SettingsPage() {
         displayName: profileForm.displayName,
         phone: profileForm.phone,
       });
-      showNotification('success', 'Profile updated successfully');
+      showNotification('success', '🎉 Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       showNotification('error', 'Failed to update profile');
@@ -103,7 +109,7 @@ export default function SettingsPage() {
         age: parseInt(childForm.age.toString()),
         dateOfBirth: Timestamp.fromDate(dob),
       });
-      showNotification('success', 'Child information updated successfully');
+      showNotification('success', '🎉 Child information updated successfully!');
     } catch (error) {
       console.error('Error updating child data:', error);
       showNotification('error', 'Failed to update child information');
@@ -114,7 +120,7 @@ export default function SettingsPage() {
     if (!currentUser?.email) return;
     try {
       await resetPassword(currentUser.email);
-      showNotification('success', 'Password reset email sent!');
+      showNotification('success', '🔐 Password reset email sent! Check your inbox!');
     } catch (error) {
       console.error('Error sending reset email:', error);
       showNotification('error', 'Failed to send reset email');
@@ -123,12 +129,15 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="settings" />
           <div className="flex-1 ml-64 flex items-center justify-center">
-            <p className="text-gray-500">Loading settings...</p>
+            <div className="text-center">
+              <span className="text-6xl animate-bounce inline-block">⚙️</span>
+              <p className="text-gray-500 mt-4 text-lg">Loading settings...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -136,58 +145,47 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="settings" />
         
         <div className="flex-1 ml-64 p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+          {/* Fun Header */}
+          <div className="text-center mb-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-sky-200 to-mint-200 mb-4 animate-float">
+              <span className="text-5xl">⚙️</span>
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-500 via-mint-500 to-lavender-500 bg-clip-text text-transparent mb-2">
+              Settings 🎯
+            </h1>
+            <p className="text-gray-600 text-lg">Customize your experience and manage your account!</p>
+          </div>
           
           {notification && (
-            <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-              notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {notification.type === 'success' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )}
+            <div className={`mb-6 p-4 rounded-2xl shadow-lg animate-bounce ${notification.type === 'success' ? 'bg-gradient-to-r from-mint-100 to-sky-100 text-green-800 border-2 border-mint-200' : 'bg-gradient-to-r from-red-100 to-coral-100 text-red-800 border-2 border-red-200'}`}>
+              <span className="text-xl mr-2">{notification.type === 'success' ? '🎉' : '⚠️'}</span>
               {notification.message}
             </div>
           )}
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="flex border-b border-gray-100">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'profile' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Account Profile
-              </button>
-              <button
-                onClick={() => setActiveTab('child')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'child' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Child Information
-              </button>
-              <button
-                onClick={() => setActiveTab('security')}
-                className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
-                  activeTab === 'security' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Security
-              </button>
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border-2 border-white overflow-hidden">
+            <div className="flex border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              {(['profile', 'child', 'security'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-4 px-6 text-center font-bold transition-all flex items-center justify-center gap-2 ${
+                    activeTab === tab 
+                      ? 'text-sky-600 border-b-4 border-sky-400 bg-gradient-to-t from-sky-50 to-transparent' 
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-2xl">{tabEmojis[tab]}</span>
+                  {tab === 'profile' ? 'Account Profile' : tab === 'child' ? 'Child Information' : 'Security'}
+                </button>
+              ))}
             </div>
 
             <div className="p-8">
@@ -195,41 +193,47 @@ export default function SettingsPage() {
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>👤</span> Full Name
+                      </label>
                       <input
                         type="text"
                         value={profileForm.displayName}
                         onChange={(e) => setProfileForm({ ...profileForm, displayName: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Your full name"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Your full name ✨"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>📧</span> Email Address
+                      </label>
                       <input
                         type="email"
                         value={userProfile?.email || ''}
                         disabled
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl bg-gray-50 text-gray-500 cursor-not-allowed text-lg"
                       />
-                      <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                      <p className="text-xs text-gray-400 mt-1">Email cannot be changed 🔒</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>📱</span> Phone Number
+                      </label>
                       <input
                         type="tel"
                         value={profileForm.phone}
                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Your phone number"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Your phone number 📞"
                       />
                     </div>
                   </div>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                    className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                   >
-                    Save Changes
+                    <span>💾</span> Save Changes
                   </button>
                 </form>
               )}
@@ -238,72 +242,82 @@ export default function SettingsPage() {
                 <form onSubmit={handleChildUpdate} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Child's Name</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>👶</span> Child&apos;s Name
+                      </label>
                       <input
                         type="text"
                         value={childForm.name}
                         onChange={(e) => setChildForm({ ...childForm, name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Child's full name"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Child's full name ⭐"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Child's Age</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>🎂</span> Child&apos;s Age
+                      </label>
                       <input
                         type="number"
                         value={childForm.age}
                         onChange={(e) => setChildForm({ ...childForm, age: parseInt(e.target.value) || 0 })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Age"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
+                        placeholder="Age 🎯"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span>📅</span> Date of Birth
+                      </label>
                       <input
                         type="date"
                         value={childForm.dateOfBirth}
                         onChange={(e) => setChildForm({ ...childForm, dateOfBirth: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         required
                       />
                     </div>
                   </div>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors"
+                    className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-sky-500 hover:to-mint-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                   >
-                    Update Child Info
+                    <span>✨</span> Update Child Info
                   </button>
                 </form>
               )}
 
               {activeTab === 'security' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Password</h3>
-                    <p className="text-gray-500 mb-4">
-                      To change your password, click the button below and we'll send a reset link to your email address: <strong>{userProfile?.email}</strong>
+                <div className="space-y-8">
+                  <div className="bg-gradient-to-r from-orange-50 to-sunshine-50 p-6 rounded-2xl border-2 border-orange-200">
+                    <h3 className="text-xl font-bold text-orange-800 mb-2 flex items-center gap-2">
+                      <span className="text-2xl">🔐</span> Password
+                    </h3>
+                    <p className="text-orange-700 mb-4">
+                      To change your password, click the button below and we&apos;ll send a reset link to your email address: <strong>{userProfile?.email}</strong>
                     </p>
                     <button
                       onClick={handlePasswordReset}
-                      className="bg-orange-100 text-orange-700 px-6 py-2 rounded-lg font-medium hover:bg-orange-200 transition-colors"
+                      className="bg-gradient-to-r from-orange-400 to-sunshine-400 text-white px-6 py-3 rounded-full font-bold hover:from-orange-500 hover:to-sunshine-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                     >
-                      Send Password Reset Email
+                      <span>📧</span> Send Password Reset Email
                     </button>
                   </div>
                   
                   <div className="pt-6 border-t border-gray-100">
-                    <h3 className="text-lg font-medium text-red-600 mb-2">Danger Zone</h3>
+                    <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center gap-2">
+                      <span className="text-2xl">⚠️</span> Danger Zone
+                    </h3>
                     <p className="text-gray-500 mb-4">
                       Deleting your account is permanent and cannot be undone. All your data, including child records and documents, will be permanently removed.
                     </p>
                     <button
-                      onClick={() => alert('Account deletion is restricted. Please contact support.')}
-                      className="border border-red-200 text-red-600 px-6 py-2 rounded-lg font-medium hover:bg-red-50 transition-colors"
+                      onClick={() => alert('Account deletion is restricted. Please contact support. 📞')}
+                      className="border-2 border-red-300 text-red-600 px-6 py-3 rounded-full font-bold hover:bg-red-50 transition-all flex items-center gap-2"
                     >
-                      Delete Account
+                      <span>🗑️</span> Delete Account
                     </button>
                   </div>
                 </div>

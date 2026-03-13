@@ -35,103 +35,79 @@ export default function ContactPage() {
 
   const contactMethods = [
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-          />
-        </svg>
-      ),
+      emoji: '📧',
       title: 'Email',
-      details: ['support@syndrometrack.com', 'info@syndrometrack.com'],
+      details: ['hello@harmony.care', 'support@harmony.care'],
+      color: 'sky',
     },
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-          />
-        </svg>
-      ),
+      emoji: '📞',
       title: 'Phone',
       details: ['+1 (555) 123-4567', 'Mon-Fri 9am-5pm EST'],
+      color: 'mint',
     },
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-      ),
+      emoji: '📍',
       title: 'Address',
-      details: ['123 Healthcare Avenue', 'Medical District, NY 10001', 'United States'],
+      details: ['123 Care Avenue', 'Family District, NY 10001', 'United States'],
+      color: 'coral',
     },
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-lavender-50 via-white to-sky-50">
       <AppHeader />
       {/* Hero Section */}
-      <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1516307361474-320dc6caae1b?auto=format&fit=crop&q=80&w=2000"
-          alt="Contact Support"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-[2px]"></div>
+      <section className="relative h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-lavender-400 via-sky-400 to-mint-400">
+        {/* Floating decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-20 w-16 h-16 bg-white/20 rounded-full animate-float"></div>
+          <div className="absolute bottom-20 right-20 w-12 h-12 bg-sunshine-300/30 rounded-full animate-float-delayed"></div>
+          <div className="absolute top-1/3 right-1/4 w-8 h-8 bg-coral-300/30 rounded-full animate-float-slow"></div>
+          <svg className="absolute top-32 left-1/3 w-10 h-10 text-white/30 animate-spin-slow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <h1 className="text-5xl sm:text-6xl font-bold mb-6">Contact Us</h1>
-          <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto font-medium">
-            Have questions? We're here to help. Get in touch with our team and we'll
-            respond as soon as possible.
+          <span className="text-6xl mb-6 block">💌</span>
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6 drop-shadow-lg">Get in Touch</h1>
+          <p className="text-xl sm:text-2xl text-white/90 max-w-3xl mx-auto font-medium">
+            We'd love to hear from you! Send us a message and we'll get back to you soon.
           </p>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Information */}
             <div className="lg:col-span-1">
-              <div className="mb-8 rounded-xl overflow-hidden shadow-lg h-48 sm:h-64 relative group">
+              <div className="mb-8 rounded-3xl overflow-hidden shadow-lg h-48 sm:h-64 relative group border-4 border-white">
                 <img 
-                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000" 
-                  alt="Our Team" 
+                  src="https://images.unsplash.com/photo-1544776193-352d25ca82cd?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Happy family" 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-blue-900/20"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-sky-500/20 to-transparent"></div>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <span className="text-3xl">👋</span>
+                Say Hello!
+              </h2>
               <p className="text-gray-600 mb-8">
-                Whether you have a question about features, pricing, or need support, our team is
-                ready to answer all your questions.
+                Have questions about HARMONY? Want to share your story? Our friendly team is here to help!
               </p>
 
               <div className="space-y-6">
                 {contactMethods.map((method, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                      {method.icon}
+                  <div key={index} className="flex items-start gap-4 bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-md border border-white/50">
+                    <div className={`flex-shrink-0 w-12 h-12 bg-${method.color}-100 rounded-xl flex items-center justify-center text-2xl`}>
+                      {method.emoji}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{method.title}</h3>
+                      <h3 className="font-bold text-gray-800 mb-1">{method.title}</h3>
                       {method.details.map((detail, idx) => (
                         <p key={idx} className="text-gray-600 text-sm">
                           {detail}
@@ -142,22 +118,29 @@ export default function ContactPage() {
                 ))}
               </div>
 
-              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">Business Hours</h3>
-                <p className="text-sm text-gray-600 mb-1">Monday - Friday: 9:00 AM - 5:00 PM EST</p>
-                <p className="text-sm text-gray-600">Saturday - Sunday: Closed</p>
+              <div className="mt-8 p-6 bg-gradient-to-r from-sky-100 to-mint-100 rounded-2xl border border-white/50">
+                <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <span>⏰</span>
+                  When We're Here
+                </h3>
+                <p className="text-sm text-gray-600 mb-1">Monday - Friday: 9:00 AM - 5:00 PM</p>
+                <p className="text-sm text-gray-600">Weekends: Family time! 👨‍👩‍👧</p>
               </div>
             </div>
 
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+              <div className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-lg border border-white/50">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <span className="text-3xl">✏️</span>
+                  Send a Message
+                </h2>
+                <p className="text-gray-600 mb-6">Fill out the form below and we'll get back to you as soon as possible!</p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name *
+                      <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Your Name *
                       </label>
                       <input
                         type="text"
@@ -166,12 +149,12 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="John Doe"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
+                        placeholder="Your name"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                         Email Address *
                       </label>
                       <input
@@ -181,15 +164,15 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="john@example.com"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
+                        placeholder="you@example.com"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -198,13 +181,13 @@ export default function ContactPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="+1 (555) 123-4567"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
+                        placeholder="Your phone number"
                       />
                     </div>
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                        Subject *
+                      <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                        What is this about? *
                       </label>
                       <select
                         id="subject"
@@ -212,21 +195,21 @@ export default function ContactPage() {
                         value={formData.subject}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
                       >
-                        <option value="">Select a subject</option>
-                        <option value="general">General Inquiry</option>
-                        <option value="support">Technical Support</option>
-                        <option value="sales">Sales Question</option>
-                        <option value="partnership">Partnership Opportunity</option>
-                        <option value="other">Other</option>
+                        <option value="">Select a topic</option>
+                        <option value="general">General Question</option>
+                        <option value="support">Need Help</option>
+                        <option value="feedback">Share Feedback</option>
+                        <option value="story">Share Your Story</option>
+                        <option value="other">Something Else</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                      Message *
+                    <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Your Message *
                     </label>
                     <textarea
                       id="message"
@@ -235,16 +218,16 @@ export default function ContactPage() {
                       onChange={handleChange}
                       required
                       rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Tell us how we can help..."
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
+                      placeholder="Tell us what's on your mind..."
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    className="w-full bg-gradient-to-r from-sky-500 to-mint-500 text-white py-3 px-6 rounded-xl font-bold hover:from-sky-600 hover:to-mint-600 focus:outline-none focus:ring-4 focus:ring-sky-300/50 transition-all shadow-lg shadow-sky-200 transform hover:scale-[1.02]"
                   >
-                    Send Message
+                    Send Message 🚀
                   </button>
                 </form>
               </div>
@@ -254,38 +237,46 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gradient-to-b from-white to-sky-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Quick answers to common questions</p>
+            <span className="text-5xl mb-4 block">❓</span>
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">Common Questions</h2>
+            <p className="text-xl text-gray-600">Quick answers to help you get started</p>
           </div>
 
           <div className="space-y-6">
             {[
               {
-                question: 'How do I get started with HARMONY?',
+                question: 'How do I start using HARMONY?',
                 answer:
-                  'Simply click the "Get Started" button and create your free account. You can start using the platform immediately after registration.',
+                  'Just click "Get Started" and create your free account. It only takes a minute, and you can begin tracking your child\'s journey right away!',
+                emoji: '🚀',
               },
               {
-                question: 'Is my data secure?',
+                question: 'Is my family\'s information safe?',
                 answer:
-                  'Yes, we use enterprise-grade encryption and are HIPAA-compliant. Your data is stored securely and we never share it with third parties.',
+                  'Absolutely! We use the best security to protect your data. Your information is safe with us, just like a treasure chest! 🔒',
+                emoji: '🔒',
               },
               {
-                question: 'Can I use HARMONY on mobile devices?',
+                question: 'Can I use HARMONY on my phone?',
                 answer:
-                  'Absolutely! HARMONY is fully responsive and we offer native iOS and Android apps for the best mobile experience.',
+                  'Yes! HARMONY works great on phones and tablets, so you can track milestones wherever you are.',
+                emoji: '📱',
               },
               {
-                question: 'What kind of support do you offer?',
+                question: 'What if I need help?',
                 answer:
-                  'We offer email support, phone support during business hours, and comprehensive documentation. Premium plans include priority support.',
+                  'We\'re here for you! Send us a message or email, and our friendly team will help you out.',
+                emoji: '💚',
               },
             ].map((faq, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{faq.question}</h3>
+              <div key={index} className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-md border border-white/50 hover:shadow-lg transition-all">
+                <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <span>{faq.emoji}</span>
+                  {faq.question}
+                </h3>
                 <p className="text-gray-600">{faq.answer}</p>
               </div>
             ))}

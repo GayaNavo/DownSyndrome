@@ -49,52 +49,71 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         {/* Left Panel - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=1200"
-          alt="Harmony Support"
+          src="https://images.unsplash.com/photo-1544776193-352d25ca82cd?auto=format&fit=crop&q=80&w=1200"
+          alt="Happy family"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-sky-500/30 via-lavender-500/30 to-coral-500/30 backdrop-blur-[1px]"></div>
+        
+        {/* Floating decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-16 h-16 bg-white/20 rounded-full animate-float"></div>
+          <div className="absolute bottom-40 right-20 w-12 h-12 bg-sunshine-300/30 rounded-full animate-float-delayed"></div>
+          <div className="absolute top-1/3 right-10 w-8 h-8 bg-coral-300/30 rounded-full animate-float-slow"></div>
+          <svg className="absolute top-32 right-1/4 w-8 h-8 text-white/40 animate-spin-slow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
         
         {/* Logo and Branding Overlay */}
         <div className="absolute bottom-12 left-12 flex items-center gap-4 z-10 text-white">
-          <div className="bg-white p-2 rounded-full shadow-lg">
+          <div className="bg-white p-3 rounded-2xl shadow-lg">
             <Logo size="large" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold mb-2">HARMONY</h1>
-            <p className="text-blue-100 text-lg font-medium">Empowering Early Detection & Care</p>
+            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">HARMONY</h1>
+            <p className="text-white/90 text-lg font-medium">Growing Together, Step by Step</p>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 lg:w-1/2 bg-gray-50 flex flex-col justify-center px-4 sm:px-8 lg:px-16 py-8 relative">
+      <div className="flex-1 lg:w-1/2 flex flex-col justify-center px-4 sm:px-8 lg:px-16 py-8 relative">
+        {/* Background decorations */}
+        <div className="absolute top-10 right-10 w-20 h-20 bg-sky-200/30 rounded-full blur-xl"></div>
+        <div className="absolute bottom-20 left-10 w-16 h-16 bg-mint-200/30 rounded-full blur-xl"></div>
+        
         <div className="w-full max-w-[520px] mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden transform transition-all hover:shadow-2xl">
-            {/* Form Header Image */}
-            <div className="h-32 sm:h-40 relative overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=1000" 
-                alt="Harmony Support" 
-                className="w-full h-full object-cover"
-              />
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transform transition-all hover:shadow-2xl">
+            {/* Form Header */}
+            <div className="h-32 sm:h-40 relative overflow-hidden bg-gradient-to-r from-sky-400 to-mint-400">
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-4 left-4 w-8 h-8 bg-white/20 rounded-full"></div>
+                <div className="absolute bottom-4 right-8 w-6 h-6 bg-white/20 rounded-full"></div>
+                <div className="absolute top-1/2 right-1/4 w-4 h-4 bg-white/30 rounded-full"></div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <span className="text-5xl mb-2 block">👋</span>
+                </div>
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
             </div>
 
             <div className="p-6 sm:p-10 -mt-8 relative z-10">
               {/* Title */}
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-1.5">
-                  Welcome Back
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                  Welcome Back!
                 </h2>
                 <p className="text-gray-500 text-sm">
-                  Log in to your account to continue
+                  Ready to continue your journey?
                 </p>
               </div>
 
@@ -109,13 +128,13 @@ export default function LoginPage() {
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Email Input */}
               <div>
-                <label htmlFor="email" className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5 ml-1">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2 ml-1">
                   Email Address
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
-                      className="h-4 w-4 text-gray-400"
+                      className="h-5 w-5 text-sky-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -135,7 +154,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
                     required
                     disabled={loading}
                   />
@@ -144,13 +163,13 @@ export default function LoginPage() {
 
               {/* Password Input */}
               <div>
-                <div className="flex items-center justify-between mb-1.5 ml-1">
-                  <label htmlFor="password" className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <div className="flex items-center justify-between mb-2 ml-1">
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
                     Password
                   </label>
                   <a
                     href="#"
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-xs text-sky-500 hover:text-sky-600 font-medium"
                   >
                     Forgot?
                   </a>
@@ -158,7 +177,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
-                      className="h-4 w-4 text-gray-400"
+                      className="h-5 w-5 text-sky-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -178,7 +197,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="block w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent focus:bg-white transition-all"
                     required
                     disabled={loading}
                   />
@@ -221,9 +240,9 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-3.5 w-3.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-sky-500 focus:ring-sky-400 border-gray-300 rounded-lg"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-xs text-gray-600">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
                   Remember me
                 </label>
               </div>
@@ -232,9 +251,18 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-sky-500 to-mint-500 text-white py-3 px-4 rounded-xl font-bold text-sm hover:from-sky-600 hover:to-mint-600 focus:outline-none focus:ring-4 focus:ring-sky-300/50 transition-all shadow-lg shadow-sky-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Signing In...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
               </button>
 
               <div className="relative my-4">
@@ -286,14 +314,17 @@ export default function LoginPage() {
               </button>
 
               <div className="pt-2 flex flex-col items-center gap-2">
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   New to HARMONY?{' '}
-                  <a href="/register" className="text-blue-600 hover:text-blue-800 font-bold">
-                    Register Now
+                  <a href="/register" className="text-sky-500 hover:text-sky-600 font-bold">
+                    Join the family! 🎉
                   </a>
                 </p>
-                <a href="/" className="text-[10px] text-gray-400 hover:text-gray-600 font-medium tracking-tight">
-                  BACK TO HOME
+                <a href="/" className="text-xs text-gray-400 hover:text-gray-600 font-medium tracking-tight flex items-center gap-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Home
                 </a>
               </div>
             </form>

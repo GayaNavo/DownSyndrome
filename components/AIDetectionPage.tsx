@@ -65,14 +65,14 @@ export default function AIDetectionPage() {
 
   const handleAnalyze = async () => {
     if (!user) {
-      alert('Please sign in to save analysis results')
+      alert('❌ Please sign in to save analysis results')
       return
     }
 
     // Get the current user's child
     const children = await getChildrenByParent(user.uid)
     if (children.length === 0) {
-      alert('Please add a child to your profile first')
+      alert('⚠️ Please add a child to your profile first')
       return
     }
     const childId = children[0].id
@@ -81,7 +81,7 @@ export default function AIDetectionPage() {
     const sdqResults = sdqTrackerRef.current?.getResults ? sdqTrackerRef.current.getResults() : null
     
     if (!sdqResults) {
-      alert('Please complete the SDQ assessment first')
+      alert('⚠️ Please complete the SDQ assessment first')
       return
     }
 
@@ -99,17 +99,21 @@ export default function AIDetectionPage() {
 
     try {
       // Save to Firestore
-      await createAnalysisResult(analysisData)
-      alert('Analysis results saved to history successfully!')
-      setAnalysisResults(sdqResults) // Store locally to show results
-    } catch (error) {
+      const result = await createAnalysisResult(analysisData)
+      if (result.success) {
+        alert(result.message) // Shows: ✅ Analysis results saved to history successfully!
+        setAnalysisResults(sdqResults) // Store locally to show results
+      } else {
+        alert(result.message || '❌ Failed to save analysis results')
+      }
+    } catch (error: any) {
       console.error('Error saving analysis result:', error)
-      alert('Failed to save analysis results. Please try again.')
+      alert(`❌ Failed to save analysis results: ${error.message}`)
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
       <AppHeader />
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -119,31 +123,38 @@ export default function AIDetectionPage() {
         <div className="flex-1 ml-64">
           <main className="p-8 w-full">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">AI-Based Detection Module</h2>
+              <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <span>🤖</span>
+                AI Assistant
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Smart Analysis Module</h2>
               <p className="text-gray-600">
-                Upload a facial image and complete the SDQ for a preliminary likelihood assessment.
+                Upload a photo and complete the questionnaire to get helpful insights about your child's development.
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Section 1: Upload Facial Image */}
-              <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-8">
+              <div className="lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-8 border border-white/50">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-mint-400 text-white rounded-2xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg">
                     1
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Upload Facial Image</h3>
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <span>📸</span>
+                      Upload a Photo
+                    </h3>
                     <p className="text-gray-600 mt-1">
-                      The face should be clear, well-lit, and forward-facing.
+                      Choose a clear photo where the face is visible and well-lit.
                     </p>
                   </div>
                 </div>
               
               <div
-                className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-                  isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                } ${imagePreview ? 'border-blue-500' : ''}`}
+                className={`border-2 border-dashed rounded-2xl p-12 text-center transition-colors ${
+                  isDragging ? 'border-sky-400 bg-sky-50' : 'border-gray-200'
+                } ${imagePreview ? 'border-mint-400' : ''}`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -153,32 +164,25 @@ export default function AIDetectionPage() {
                     <img
                       src={imagePreview}
                       alt="Uploaded"
-                      className="max-w-full max-h-64 mx-auto rounded-lg"
+                      className="max-w-full max-h-64 mx-auto rounded-2xl shadow-lg"
                     />
                     <button
                       onClick={() => {
                         setUploadedImage(null)
                         setImagePreview(null)
                       }}
-                      className="text-red-600 hover:text-red-700 font-medium"
+                      className="text-coral-500 hover:text-coral-600 font-bold"
                     >
-                      Remove Image
+                      Remove Photo ✕
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="flex justify-center">
-                      <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
+                      <span className="text-6xl">📷</span>
                     </div>
                     <div>
-                      <p className="text-gray-600 mb-2">
+                      <p className="text-gray-600 mb-2 font-medium">
                         Click to upload or drag & drop
                       </p>
                       <p className="text-sm text-gray-500">PNG or JPG (max. 10MB)</p>
@@ -192,9 +196,9 @@ export default function AIDetectionPage() {
                     />
                     <label
                       htmlFor="file-upload"
-                      className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 cursor-pointer transition-colors"
+                      className="inline-block bg-gradient-to-r from-sky-500 to-mint-500 text-white px-6 py-3 rounded-xl font-bold hover:from-sky-600 hover:to-mint-600 cursor-pointer transition-all shadow-lg transform hover:scale-105"
                     >
-                      Browse Files
+                      Choose Photo
                     </label>
                   </div>
                 )}
@@ -203,60 +207,59 @@ export default function AIDetectionPage() {
 
             {/* Instruction / Best Practices Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                <h4 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Instruction Guide
+              <div className="bg-sky-50 rounded-3xl p-6 border border-sky-100">
+                <h4 className="font-bold text-sky-800 mb-4 flex items-center gap-2">
+                  <span className="text-xl">💡</span>
+                  Photo Tips
                 </h4>
                 <div className="space-y-4">
-                  <div className="aspect-[4/3] rounded-lg overflow-hidden border-2 border-white shadow-sm">
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden border-4 border-white shadow-lg">
                     <img 
-                      src="https://images.unsplash.com/photo-1590033821368-7f7f469b1561?auto=format&fit=crop&q=80&w=400" 
-                      alt="Correct pose example" 
+                      src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400" 
+                      alt="Happy child example" 
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <ul className="text-sm text-blue-800 space-y-3">
-                    <li className="flex gap-2">
-                      <span className="font-bold text-blue-600">✓</span>
-                      Face should be well-lit from the front
+                  <ul className="text-sm text-sky-700 space-y-3">
+                    <li className="flex gap-2 items-center">
+                      <span className="text-mint-500 font-bold text-lg">✓</span>
+                      Good lighting from the front
                     </li>
-                    <li className="flex gap-2">
-                      <span className="font-bold text-blue-600">✓</span>
-                      Neutral facial expression (closed mouth)
+                    <li className="flex gap-2 items-center">
+                      <span className="text-mint-500 font-bold text-lg">✓</span>
+                      Natural, relaxed expression
                     </li>
-                    <li className="flex gap-2">
-                      <span className="font-bold text-blue-600">✓</span>
-                      Ensure the background is plain
+                    <li className="flex gap-2 items-center">
+                      <span className="text-mint-500 font-bold text-lg">✓</span>
+                      Simple, uncluttered background
                     </li>
                   </ul>
                 </div>
               </div>
 
-              <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  Privacy Note
+              <div className="bg-coral-50 rounded-3xl p-6 border border-coral-100">
+                <h4 className="font-bold text-coral-800 mb-2 flex items-center gap-2">
+                  <span className="text-xl">🔒</span>
+                  Privacy Promise
                 </h4>
-                <p className="text-sm text-orange-800">
-                  Facial images are processed securely and used only for preliminary analysis. We never share sensitive data with third parties.
+                <p className="text-sm text-coral-700">
+                  Your photos are kept safe and secure. We only use them to help analyze development and never share with anyone else.
                 </p>
               </div>
             </div>
 
               {/* Section 2: Complete the SDQ */}
-              <div className="lg:col-span-3 bg-white rounded-xl shadow-md p-8">
+              <div className="lg:col-span-3 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-8 border border-white/50">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 bg-gradient-to-br from-lavender-400 to-coral-400 text-white rounded-2xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg">
                     2
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Complete the SDQ</h3>
-                    <p className="text-sm text-gray-600 mt-1">The Strengths and Difficulties Questionnaire provides holistic insights.</p>
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <span>📝</span>
+                      Answer Some Questions
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">These questions help us understand your child's unique strengths and personality.</p>
                   </div>
                 </div>
                 
@@ -268,12 +271,10 @@ export default function AIDetectionPage() {
             <div className="mt-8">
               <button
                 onClick={handleAnalyze}
-                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-sky-500 via-lavender-500 to-coral-500 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-sky-600 hover:via-lavender-600 hover:to-coral-600 focus:outline-none focus:ring-4 focus:ring-lavender-300/50 transition-all shadow-xl flex items-center justify-center gap-2 transform hover:scale-[1.02]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Analyze Data
+                <span className="text-2xl">✨</span>
+                Get Insights
               </button>
             </div>
 
