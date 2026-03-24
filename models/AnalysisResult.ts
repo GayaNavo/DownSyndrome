@@ -17,6 +17,14 @@ export interface AnalysisResult {
   analysisType: 'facial' | 'sdq' | 'combined';
   notes?: string;
   confidence?: number; // Confidence level of the analysis
+  aiPrediction?: {
+    confidence: number;
+    prediction: 'healthy' | 'downsyndrome';
+    features: {
+      facialFeatures: number[];
+      probability: number;
+    };
+  }; // AI model prediction results
 }
 
 export class AnalysisResultModel {

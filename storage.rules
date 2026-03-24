@@ -1,0 +1,81 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user ID from request
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    // Helper function to extract childId from path
+    // Path format: documents/{childId}/{category}/{filename}
+    function getChildIdFromPath() {
+      let pathParts = request.path.split('/');
+      // For paths like "documents/childId123/category/file.png"
+      // After splitting: ["documents", "childId123", "category", "file.png"]
+      // We want index 1 (the childId)
+      return pathParts[1];
+    }
+    
+    // Helper function to verify user owns the child document
+    function isParentOfChild(childId) {
+      // Check if the childId matches the user's UID directly
+      // OR fetch the child document to check parentId field
+      return childId == getUserId() || 
+        (exists(/databases/$(database)/documents/children/$(childId)) && 
+         get(/databases/$(database)/documents/children/$(childId)).data.parentId == getUserId());
+    }
+    
+    // Default rule - deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Documents storage
+    // Path structure: documents/{childId}/{category}/{filename}
+    match /documents/{childId}/{category}/{fileName} {
+      // Allow upload if:
+      // 1. User is authenticated
+      // 2. User is the parent of the child OR uploading to their own child folder
+      allow write: if isSignedIn() && isParentOfChild(childId);
+      
+      // Allow download/read if:
+      // 1. User is authenticated
+      // 2. User is the parent of the child
+      allow read: if isSignedIn() && isParentOfChild(childId);
+      
+      // Allow delete if:
+      // 1. User is authenticated
+      // 2. User is the parent of the child
+      allow delete: if isSignedIn() && isParentOfChild(childId);
+    }
+    
+    // Profile pictures
+    // Path structure: profile_pictures/{userId}/{filename}
+    match /profile_pictures/{userId}/{fileName} {
+      allow write: if isSignedIn() && userId == getUserId();
+      allow read: if isSignedIn();
+      allow delete: if isSignedIn() && userId == getUserId();
+    }
+    
+    // Medical reports (alternative structure)
+    // Path structure: medical_reports/{childId}/{filename}
+    match /medical_reports/{childId}/{fileName} {
+      allow write: if isSignedIn() && isParentOfChild(childId);
+      allow read: if isSignedIn() && isParentOfChild(childId);
+      allow delete: if isSignedIn() && isParentOfChild(childId);
+    }
+    
+    // Therapy documents (alternative structure)
+    // Path structure: therapy_docs/{childId}/{filename}
+    match /therapy_docs/{childId}/{fileName} {
+      allow write: if isSignedIn() && isParentOfChild(childId);
+      allow read: if isSignedIn() && isParentOfChild(childId);
+      allow delete: if isSignedIn() && isParentOfChild(childId);
+    }
+  }
+}

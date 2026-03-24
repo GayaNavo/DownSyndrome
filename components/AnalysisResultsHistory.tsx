@@ -33,8 +33,15 @@ const AnalysisResultsHistory: React.FC<AnalysisResultsHistoryProps> = ({ childId
         }
         
         if (finalChildId) {
-          const fetchedResults = await getAnalysisResultsByChild(finalChildId);
-          setResults(fetchedResults);
+          const response = await getAnalysisResultsByChild(finalChildId);
+          if (response.success && response.data) {
+            setResults(response.data);
+          } else {
+            setResults([]);
+            if (response.error) {
+              console.error('Error fetching analysis results:', response.error);
+            }
+          }
         } else {
           setResults([]);
         }

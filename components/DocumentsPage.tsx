@@ -38,6 +38,7 @@ export default function DocumentsPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editingDocument, setEditingDocument] = useState<DocumentData | null>(null)
   const [editForm, setEditForm] = useState({
@@ -131,10 +132,17 @@ export default function DocumentsPage() {
         // Delete document from Firestore
         await deleteDocumentEntry(id);
         setDocuments(documents.filter(doc => doc.id !== id));
-        alert('🎉 Document deleted successfully!');
+        setUploadSuccess('🗑️ Document deleted successfully!');
+        setUploadError(null);
+        
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          setUploadSuccess(null);
+        }, 3000);
       } catch (error) {
         console.error('Error deleting document:', error);
-        alert('Error deleting document. Please try again.');
+        setUploadError('❌ Failed to delete document. Please try again.');
+        setUploadSuccess(null);
       }
     }
   }
@@ -152,7 +160,8 @@ export default function DocumentsPage() {
       }
     } catch (error) {
       console.error('Error fetching document:', error)
-      alert('Error fetching document. Please try again.')
+      setUploadError('❌ Error fetching document. Please try again.')
+      setUploadSuccess(null)
     }
   }
 
@@ -176,9 +185,17 @@ export default function DocumentsPage() {
       setIsEditing(false)
       setEditingDocument(null)
       setEditForm({ title: '', category: 'other' })
+      setUploadSuccess('✏️ Document updated successfully! ✨')
+      setUploadError(null)
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
     } catch (error) {
       console.error('Error updating document:', error)
-      alert('Error updating document. Please try again.')
+      setUploadError('❌ Failed to update document. Please try again.')
+      setUploadSuccess(null)
     }
   }
 
@@ -188,11 +205,44 @@ export default function DocumentsPage() {
     setEditForm({ title: '', category: 'other' })
   }
 
+  const handleDownload = async (doc: DocumentData) => {
+    try {
+      // Check if fileUrl exists and is not a dummy URL
+      if (!doc.fileUrl || doc.fileUrl === '#') {
+        setUploadError('❌ This document is not available for download.')
+        setUploadSuccess(null)
+        return
+      }
+
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a')
+      link.href = doc.fileUrl
+      link.download = doc.fileName || doc.title
+      link.target = '_blank'
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Show success message
+      setUploadSuccess(`⬇️ Downloading ${doc.fileName || doc.title}...`)
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Download error:', error)
+      setUploadError('❌ Failed to download document. Please try again.')
+      setUploadSuccess(null)
+    }
+  }
+
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0 || !child) return
     
     setIsUploading(true)
     setUploadError(null)
+    setUploadSuccess(null)
     setUploadProgress(0)
     
     try {
@@ -203,8 +253,10 @@ export default function DocumentsPage() {
         selectedCategory === 'all' ? 'other' : selectedCategory
       )
       
-      // Process successful uploads
+      // Track successful and failed uploads
       const successfulUploads: DocumentData[] = []
+      const failedUploads: string[] = []
+      const validationErrors: string[] = []
       
       for (const result of results) {
         if (result.success && result.fileUrl) {
@@ -228,20 +280,48 @@ export default function DocumentsPage() {
             } as DocumentData)
           } catch (error) {
             console.error('Error creating document entry:', error)
+            failedUploads.push(`${result.fileName}: Failed to save to database`)
           }
         } else {
-          setUploadError(result.error || 'Upload failed')
+          const errorMsg = result.error || 'Upload failed'
+          failedUploads.push(`${result.fileName || 'Unknown file'}: ${errorMsg}`)
+          
+          // Track validation errors separately
+          if (errorMsg.includes('size exceeds') || errorMsg.includes('type not supported')) {
+            validationErrors.push(`${result.fileName || 'File'}: ${errorMsg}`)
+          }
         }
       }
       
       // Update documents state
       if (successfulUploads.length > 0) {
         setDocuments(prev => [...successfulUploads, ...prev])
+        
+        // Show success message
+        const categoryLabel = categories.find(c => c.id === (selectedCategory === 'all' ? 'other' : selectedCategory))?.label || 'documents'
+        if (successfulUploads.length === 1) {
+          setUploadSuccess(` Successfully uploaded 1 document to ${categoryLabel}! 🎉`)
+        } else {
+          setUploadSuccess(` Successfully uploaded ${successfulUploads.length} documents to ${categoryLabel}! 🎉`)
+        }
+        
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+          setUploadSuccess(null)
+        }, 5000)
+      }
+      
+      // Show error message if there were failures
+      if (failedUploads.length > 0) {
+        const errorMessage = validationErrors.length > 0
+          ? `⚠️ ${validationErrors.join('. ')}${failedUploads.length > validationErrors.length ? '. Other uploads failed.' : ''}`
+          : `❌ ${failedUploads.length} upload(s) failed. Please try again.`
+        setUploadError(errorMessage)
       }
       
     } catch (error) {
       console.error('Upload error:', error)
-      setUploadError('Failed to upload files')
+      setUploadError('❌ Failed to upload files. Please check your connection and try again.')
     } finally {
       setIsUploading(false)
       setUploadProgress(0)
@@ -377,7 +457,7 @@ export default function DocumentsPage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="🔍 Search documents..."
+                    placeholder=" Search documents..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-400 w-64 text-lg"
@@ -423,11 +503,38 @@ export default function DocumentsPage() {
               </div>
             )}
             
+            {/* Success Message */}
+            {uploadSuccess && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-200 rounded-2xl shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✅</span>
+                    <span className="text-green-800 font-bold">{uploadSuccess}</span>
+                  </div>
+                  <button
+                    onClick={() => setUploadSuccess(null)}
+                    className="text-green-600 hover:text-green-800 text-xl font-bold px-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Error Message */}
             {uploadError && (
-              <div className="mb-4 p-4 bg-gradient-to-r from-red-100 to-coral-100 border-2 border-red-200 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">⚠️</span>
-                  <span className="text-red-800 font-bold">{uploadError}</span>
+              <div className="mb-4 p-4 bg-gradient-to-r from-red-100 to-coral-100 border-2 border-red-200 rounded-2xl shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">❌</span>
+                    <span className="text-red-800 font-bold">{uploadError}</span>
+                  </div>
+                  <button
+                    onClick={() => setUploadError(null)}
+                    className="text-red-600 hover:text-red-800 text-xl font-bold px-2"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
             )}
@@ -554,8 +661,12 @@ export default function DocumentsPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button className="p-2 text-gray-400 hover:text-sky-500 transition-colors text-xl" title="Download">
-                              ⬇️
+                            <button 
+                              onClick={() => handleDownload(doc)}
+                              className="p-2 text-gray-400 hover:text-sky-500 transition-colors text-xl" 
+                              title="View"
+                            >
+                              👁️
                             </button>
                             <button 
                               onClick={() => doc.id && handleEdit(doc.id)}

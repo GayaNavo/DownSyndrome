@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
 import AppHeader from './AppHeader';
 import { getUserDocument, updateUserDocument, UserData } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorageInstance } from '@/lib/firebase/config';
 
 export default function ParentProfile() {
   const { currentUser } = useAuth();
@@ -16,7 +18,10 @@ export default function ParentProfile() {
     displayName: '',
     email: '',
     phone: '',
+    photoURL: '',
   });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [notification, setNotification] = useState<{type: string, message: string} | null>(null);
 
   useEffect(() => {
@@ -36,6 +41,7 @@ export default function ParentProfile() {
             displayName: userData.displayName || '',
             email: userData.email || '',
             phone: userData.phone || '',
+            photoURL: userData.photoURL || '',
           });
         }
       } catch (error) {
@@ -62,17 +68,73 @@ export default function ParentProfile() {
         await updateUserDocument(currentUser.uid, {
           displayName: formData.displayName,
           phone: formData.phone,
+          photoURL: formData.photoURL,
         });
         setUserProfile(prev => prev ? {
           ...prev,
           displayName: formData.displayName,
           phone: formData.phone,
+          photoURL: formData.photoURL,
         } : null);
         setEditing(false);
         showNotification('success', '🎉 Profile updated successfully!');
       } catch (error) {
         console.error('Error updating profile:', error);
         showNotification('error', 'Failed to update profile');
+      }
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('error', '⚠️ Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('error', '⚠️ Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingPhoto(true);
+      
+      // Create storage path: profiles/{uid}/{timestamp}_{filename}
+      const timestamp = Date.now();
+      const filePath = `profiles/${currentUser.uid}/${timestamp}_${file.name}`;
+      const storageRef = ref(getStorageInstance(), filePath);
+
+      // Upload file
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Update form data and user profile
+      setFormData(prev => ({ ...prev, photoURL: downloadURL }));
+      
+      // Also update Firestore immediately
+      await updateUserDocument(currentUser.uid, {
+        photoURL: downloadURL,
+      });
+      
+      setUserProfile(prev => prev ? {
+        ...prev,
+        photoURL: downloadURL,
+      } : null);
+
+      showNotification('success', '✅ Profile photo updated successfully!');
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      showNotification('error', '❌ Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -132,10 +194,40 @@ export default function ParentProfile() {
               {/* Profile Header */}
               <div className="bg-white p-6 border-b border-gray-100">
                 <div className="flex flex-col md:flex-row items-center gap-6 -mt-24 relative z-10">
-                  <div className="w-36 h-36 bg-white p-2 rounded-full shadow-2xl">
-                    <div className="w-full h-full bg-gradient-to-br from-sky-400 to-mint-400 rounded-full flex items-center justify-center text-white text-6xl">
-                      👤
+                  <div className="relative group">
+                    <div className="w-36 h-36 bg-white p-2 rounded-full shadow-2xl overflow-hidden">
+                      {userProfile?.photoURL ? (
+                        <img 
+                          src={userProfile.photoURL} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-sky-400 to-mint-400 rounded-full flex items-center justify-center text-white text-6xl">
+                          👤
+                        </div>
+                      )}
                     </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                      className="absolute bottom-0 right-0 bg-gradient-to-r from-sky-400 to-mint-400 text-white p-3 rounded-full shadow-lg hover:from-sky-500 hover:to-mint-500 transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Change profile photo"
+                    >
+                      {uploadingPhoto ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <span className="text-xl">📷</span>
+                      )}
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      disabled={uploadingPhoto}
+                    />
                   </div>
                   <div className="text-center md:text-left pt-4 md:pt-16">
                     <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -199,6 +291,45 @@ export default function ParentProfile() {
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         />
                       </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2 text-lg" htmlFor="photoURL">
+                          <span>📷</span> Profile Photo
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                            {formData.photoURL ? (
+                              <img 
+                                src={formData.photoURL} 
+                                alt="Profile Preview" 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-100 flex items-center justify-center text-3xl">
+                                👤
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingPhoto}
+                            className="bg-gradient-to-r from-sky-400 to-mint-400 text-white px-4 py-2 rounded-full font-semibold hover:from-sky-500 hover:to-mint-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                            {uploadingPhoto ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <span>📷</span> Change Photo
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-400 mt-2">Click to upload a new photo (JPG, PNG, max 5MB)</p>
+                      </div>
                     </div>
                     
                     <div className="flex gap-4">
@@ -216,6 +347,7 @@ export default function ParentProfile() {
                             displayName: userProfile?.displayName || '',
                             email: userProfile?.email || '',
                             phone: userProfile?.phone || '',
+                            photoURL: userProfile?.photoURL || '',
                           });
                         }}
                         className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-50 transition-all hover:border-gray-400 flex items-center gap-2"

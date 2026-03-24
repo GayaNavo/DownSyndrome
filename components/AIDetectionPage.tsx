@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
 import AnalysisResultsHistory from './AnalysisResultsHistory'
@@ -8,7 +8,9 @@ import SDQTracker, { type SDQTrackerHandle } from './SDQTracker'
 import { useAuth } from '@/contexts/AuthContext'
 import { getChildrenByParent } from '@/lib/firebase/firestore'
 import { createAnalysisResult } from '@/services/analysisResultService'
+import { analyzeImage, checkModelHealth } from '@/services/modelApiService'
 import { AnalysisResultModel } from '@/models/AnalysisResult'
+import { ModelPrediction } from '@/config/model.config'
 
 
 
@@ -17,13 +19,54 @@ export default function AIDetectionPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [analysisResults, setAnalysisResults] = useState<any>(null)
+  const [aiPrediction, setAiPrediction] = useState<ModelPrediction | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isImageAnalyzing, setIsImageAnalyzing] = useState(false)
+  const [imageAnalysisResult, setImageAnalysisResult] = useState<ModelPrediction | null>(null)
+  const [modelStatus, setModelStatus] = useState<'checking' | 'online' | 'offline'>('checking')
   const { currentUser: user } = useAuth()
   const sdqTrackerRef = useRef<any>(null)
+
+  // Check model health on component mount
+  useEffect(() => {
+    const checkHealth = async () => {
+      const isHealthy = await checkModelHealth()
+      setModelStatus(isHealthy ? 'online' : 'offline')
+    }
+    checkHealth()
+  }, [])
+
+  // Analyze image immediately after upload
+  useEffect(() => {
+    const analyzeUploadedImage = async () => {
+      if (imagePreview && modelStatus === 'online') {
+        setIsImageAnalyzing(true)
+        try {
+          console.log('Auto-analyzing uploaded image...')
+          const apiResponse = await analyzeImage(imagePreview)
+          
+          if (apiResponse.success && apiResponse.data) {
+            setImageAnalysisResult(apiResponse.data)
+            console.log('Image Analysis Result:', apiResponse.data)
+          } else {
+            console.warn('Image analysis failed:', apiResponse.error)
+          }
+        } catch (error) {
+          console.error('Error analyzing image:', error)
+        } finally {
+          setIsImageAnalyzing(false)
+        }
+      }
+    }
+    
+    analyzeUploadedImage()
+  }, [imagePreview, modelStatus])
 
   const handleFileSelect = (file: File) => {
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
       if (file.size <= 10 * 1024 * 1024) {
         setUploadedImage(file)
+        setImageAnalysisResult(null) // Clear previous analysis
         const reader = new FileReader()
         reader.onloadend = () => {
           setImagePreview(reader.result as string)
@@ -85,30 +128,57 @@ export default function AIDetectionPage() {
       return
     }
 
-    // Prepare analysis result data
-    const analysisData = {
-      childId: childId!, // Ensure childId is a string
-      facialImageData: imagePreview || undefined, // Save image preview as base64 if available
-      sdqScores: sdqResults.scores,
-      totalDifficulty: sdqResults.totalDifficulty,
-      percentage: sdqResults.percentage,
-      interpretation: AnalysisResultModel.calculateInterpretation(sdqResults.percentage),
-      analysisType: imagePreview ? 'combined' as const : 'sdq' as const, // If image is present, it's combined; otherwise just SDQ
-      notes: 'Automated analysis based on SDQ assessment'
-    }
+    setIsAnalyzing(true)
+    let aiResults: ModelPrediction | null = null
 
     try {
+      // If image is uploaded, send to Flask API for AI analysis
+      if (imagePreview) {
+        console.log('Sending image to AI model...')
+        const apiResponse = await analyzeImage(imagePreview)
+        
+        if (apiResponse.success && apiResponse.data) {
+          aiResults = apiResponse.data
+          setAiPrediction(aiResults)
+          console.log('AI Prediction:', aiResults)
+        } else {
+          console.warn('AI analysis failed:', apiResponse.error)
+          // Continue with SDQ-only analysis if AI fails
+        }
+      }
+
+      // Prepare analysis result data
+      const analysisData = {
+        childId: childId!,
+        facialImageData: imagePreview || undefined,
+        sdqScores: sdqResults.scores,
+        totalDifficulty: sdqResults.totalDifficulty,
+        percentage: sdqResults.percentage,
+        interpretation: AnalysisResultModel.calculateInterpretation(sdqResults.percentage),
+        analysisType: imagePreview ? 'combined' as const : 'sdq' as const,
+        aiPrediction: aiResults ? {
+          confidence: aiResults.confidence,
+          prediction: aiResults.prediction,
+          features: aiResults.features,
+        } : undefined,
+        notes: aiResults 
+          ? `Combined analysis: AI confidence ${(aiResults.confidence * 100).toFixed(1)}%` 
+          : 'Analysis based on SDQ assessment only'
+      }
+
       // Save to Firestore
       const result = await createAnalysisResult(analysisData)
       if (result.success) {
-        alert(result.message) // Shows: ✅ Analysis results saved to history successfully!
-        setAnalysisResults(sdqResults) // Store locally to show results
+        alert(result.message)
+        setAnalysisResults({ ...sdqResults, aiPrediction: aiResults })
       } else {
         alert(result.message || '❌ Failed to save analysis results')
       }
     } catch (error: any) {
-      console.error('Error saving analysis result:', error)
-      alert(`❌ Failed to save analysis results: ${error.message}`)
+      console.error('Error during analysis:', error)
+      alert(`❌ Analysis failed: ${error.message}`)
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
@@ -123,9 +193,32 @@ export default function AIDetectionPage() {
         <div className="flex-1 ml-64">
           <main className="p-8 w-full">
             <div className="mb-8">
-              <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                <span>🤖</span>
-                AI Assistant
+              <div className="flex items-center gap-4 mb-4">
+                <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-semibold">
+                  <span>🤖</span>
+                  AI Assistant
+                </div>
+                {/* Model Status Indicator */}
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
+                  modelStatus === 'online' 
+                    ? 'bg-green-100 text-green-700' 
+                    : modelStatus === 'offline'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    modelStatus === 'online' 
+                      ? 'bg-green-500 animate-pulse' 
+                      : modelStatus === 'offline'
+                      ? 'bg-red-500'
+                      : 'bg-yellow-500 animate-pulse'
+                  }`}></span>
+                  {modelStatus === 'online' 
+                    ? 'AI Model Online' 
+                    : modelStatus === 'offline'
+                    ? 'AI Model Offline'
+                    : 'Checking AI Model...'}
+                </div>
               </div>
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Smart Analysis Module</h2>
               <p className="text-gray-600">
@@ -166,10 +259,62 @@ export default function AIDetectionPage() {
                       alt="Uploaded"
                       className="max-w-full max-h-64 mx-auto rounded-2xl shadow-lg"
                     />
+                    
+                    {/* Image Analysis Results Box */}
+                    {isImageAnalyzing ? (
+                      <div className="bg-sky-50 rounded-2xl p-6 border border-sky-200">
+                        <div className="flex items-center justify-center gap-3">
+                          <svg className="animate-spin h-6 w-6 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span className="text-sky-700 font-semibold">Analyzing image...</span>
+                        </div>
+                      </div>
+                    ) : imageAnalysisResult ? (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+                          <span>🎯</span>
+                          Image Analysis Result
+                        </h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-white/80 rounded-xl p-3 text-center">
+                            <p className="text-xs text-gray-600 mb-1">Prediction</p>
+                            <p className={`text-lg font-bold capitalize ${
+                              imageAnalysisResult.prediction === 'downsyndrome' 
+                                ? 'text-amber-600' 
+                                : 'text-green-600'
+                            }`}>
+                              {imageAnalysisResult.prediction === 'downsyndrome' ? 'Down Syndrome' : 'Healthy'}
+                            </p>
+                          </div>
+                          <div className="bg-white/80 rounded-xl p-3 text-center">
+                            <p className="text-xs text-gray-600 mb-1">Confidence</p>
+                            <p className="text-lg font-bold text-sky-600">
+                              {(imageAnalysisResult.confidence * 100).toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="bg-white/80 rounded-xl p-3 text-center">
+                            <p className="text-xs text-gray-600 mb-1">Probability</p>
+                            <p className="text-lg font-bold text-lavender-600">
+                              {(imageAnalysisResult.features.probability * 100).toFixed(1)}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : modelStatus === 'offline' ? (
+                      <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200">
+                        <p className="text-yellow-700 text-sm text-center">
+                          ⚠️ AI Model is offline. Cannot analyze image.
+                        </p>
+                      </div>
+                    ) : null}
+                    
                     <button
                       onClick={() => {
                         setUploadedImage(null)
                         setImagePreview(null)
+                        setImageAnalysisResult(null)
                       }}
                       className="text-coral-500 hover:text-coral-600 font-bold"
                     >
@@ -271,12 +416,59 @@ export default function AIDetectionPage() {
             <div className="mt-8">
               <button
                 onClick={handleAnalyze}
-                className="w-full bg-gradient-to-r from-sky-500 via-lavender-500 to-coral-500 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-sky-600 hover:via-lavender-600 hover:to-coral-600 focus:outline-none focus:ring-4 focus:ring-lavender-300/50 transition-all shadow-xl flex items-center justify-center gap-2 transform hover:scale-[1.02]"
+                disabled={isAnalyzing}
+                className="w-full bg-gradient-to-r from-sky-500 via-lavender-500 to-coral-500 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-sky-600 hover:via-lavender-600 hover:to-coral-600 focus:outline-none focus:ring-4 focus:ring-lavender-300/50 transition-all shadow-xl flex items-center justify-center gap-2 transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
               >
-                <span className="text-2xl">✨</span>
-                Get Insights
+                {isAnalyzing ? (
+                  <>
+                    <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl">✨</span>
+                    <span>Get Insights</span>
+                  </>
+                )}
               </button>
             </div>
+
+            {/* AI Prediction Results */}
+            {aiPrediction && (
+              <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 border border-green-200">
+                <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                  <span>🎯</span>
+                  AI Analysis Results
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/80 rounded-2xl p-4 text-center">
+                    <p className="text-sm text-gray-600 mb-1">Prediction</p>
+                    <p className={`text-2xl font-bold capitalize ${
+                      aiPrediction.prediction === 'downsyndrome' 
+                        ? 'text-amber-600' 
+                        : 'text-green-600'
+                    }`}>
+                      {aiPrediction.prediction === 'downsyndrome' ? 'Down Syndrome' : 'Healthy'}
+                    </p>
+                  </div>
+                  <div className="bg-white/80 rounded-2xl p-4 text-center">
+                    <p className="text-sm text-gray-600 mb-1">Confidence</p>
+                    <p className="text-2xl font-bold text-sky-600">
+                      {(aiPrediction.confidence * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="bg-white/80 rounded-2xl p-4 text-center">
+                    <p className="text-sm text-gray-600 mb-1">Probability</p>
+                    <p className="text-2xl font-bold text-lavender-600">
+                      {(aiPrediction.features.probability * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Analysis Results History */}
             <div className="mt-12">

@@ -57,10 +57,14 @@ export default function EntryForm() {
   const [notification, setNotification] = useState<{type: string, message: string} | null>(null);
   const [activeTab, setActiveTab] = useState<'health' | 'milestone' | 'progress'>('health');
   const [recentMilestones, setRecentMilestones] = useState<MilestoneData[]>([]);
+  const [maxDate, setMaxDate] = useState<string>('');
 
   useEffect(() => {
     if (currentUser) {
       fetchChildren();
+      // Set max date to today for date picker validation
+      const today = new Date().toISOString().split('T')[0];
+      setMaxDate(today);
     }
   }, [currentUser]);
 
@@ -123,11 +127,22 @@ export default function EntryForm() {
       return;
     }
 
+    // Validate date is not in the future
+    const selectedDate = new Date(formData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      showNotification('error', '⚠️ Invalid Date: Date cannot be in the future. Please select a valid date.');
+      return;
+    }
+
     try {
       if (formData.entryType === 'health') {
         // Validate health data
         if (!formData.weight && !formData.height && !formData.sleepingHours) {
-          showNotification('error', 'Please enter at least one measurement (weight, height, or sleeping hours)');
+          showNotification('error', '⚠️ Validation Error: Please enter at least one measurement (weight, height, or sleeping hours)');
           return;
         }
         
@@ -141,11 +156,17 @@ export default function EntryForm() {
           notes: formData.notes,
         });
         
-        showNotification('success', '🎉 Health data entry added successfully!');
+        // Build success message based on what was entered
+        let measurements = [];
+        if (formData.weight) measurements.push(`weight ${formData.weight}kg`);
+        if (formData.height) measurements.push(`height ${formData.height}cm`);
+        if (formData.sleepingHours) measurements.push(`${formData.sleepingHours}h sleep`);
+        
+        showNotification('success', `✅ Health data recorded successfully! Tracked: ${measurements.join(', ')}. Great job monitoring your child's health! 💪`);
       } else if (formData.entryType === 'milestone') {
         // Validate milestone data
         if (!formData.milestoneTitle) {
-          showNotification('error', 'Please enter a milestone title');
+          showNotification('error', '⚠️ Validation Error: Please enter a milestone title');
           return;
         }
         
@@ -158,7 +179,7 @@ export default function EntryForm() {
           achievedAt: Timestamp.fromDate(new Date(formData.date)),
         });
         
-        showNotification('success', '🏆 Milestone entry added successfully! Amazing!');
+        showNotification('success', `🏆 Amazing! "${formData.milestoneTitle}" has been recorded! Your little star is shining bright! ⭐`);
         
         // Refresh recent milestones
         const milestones = await getMilestonesByChild(formData.childId);
@@ -166,7 +187,7 @@ export default function EntryForm() {
       } else if (formData.entryType === 'progress') {
         // Validate progress data
         if (!formData.progressCategory || !formData.progressScore) {
-          showNotification('error', 'Please enter both category and score for progress tracking');
+          showNotification('error', '⚠️ Validation Error: Please enter both category and score for progress tracking');
           return;
         }
         
@@ -179,7 +200,8 @@ export default function EntryForm() {
           notes: formData.notes,
         });
         
-        showNotification('success', '📈 Progress entry added successfully! Keep it up!');
+        const scoreEmoji = formData.progressScore >= 8 ? '🌟' : formData.progressScore >= 5 ? '⭐' : '💪';
+        showNotification('success', `📈 Progress tracked! ${formData.progressCategory.replace('_', ' ')}: ${formData.progressScore}/10 ${scoreEmoji}. Keep encouraging your champion! 🎯`);
       }
       
       // Reset form
@@ -197,9 +219,24 @@ export default function EntryForm() {
         progressScore: undefined,
         entryType: activeTab,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding entry:', error);
-      showNotification('error', `Failed to add ${formData.entryType} entry. Please try again.`);
+      
+      // Provide specific error messages based on the type of entry
+      const entryTypeName = formData.entryType === 'health' ? 'health data' : 
+                           formData.entryType === 'milestone' ? 'milestone' : 'progress';
+      
+      let errorMessage = '❌ Failed to save entry. Please check your connection and try again.';
+      
+      if (error?.code === 'permission-denied') {
+        errorMessage = '❌ Permission denied. Please make sure you have access to add entries for this child.';
+      } else if (error?.message?.includes('network')) {
+        errorMessage = '❌ Network error. Please check your internet connection and try again.';
+      } else if (error?.message?.includes('timeout')) {
+        errorMessage = '❌ Request timed out. Please try again.';
+      }
+      
+      showNotification('error', `${errorMessage} If the problem persists, please contact support.`);
     }
   };
 
@@ -487,9 +524,15 @@ export default function EntryForm() {
                       name="date"
                       value={formData.date}
                       onChange={handleInputChange}
+                      max={maxDate}
                       required
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                     />
+                    {!formData.date && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        📅 Required - Select the date for this entry
+                      </p>
+                    )}
                   </div>
                   
                   <div className="md:col-span-2">

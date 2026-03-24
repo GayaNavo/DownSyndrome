@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null)
   const [savingEvent, setSavingEvent] = useState(false)
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -72,6 +73,13 @@ export default function DashboardPage() {
     }
   }, [currentUser]);
 
+  // Reload dashboard data when selectedChild changes
+  useEffect(() => {
+    if (selectedChild?.id) {
+      loadDashboardData(selectedChild.id);
+    }
+  }, [selectedChild?.id]);
+
   // Event management functions
   const openEventModal = (event?: UpcomingEvent) => {
     if (event) {
@@ -108,7 +116,8 @@ export default function DashboardPage() {
     e.preventDefault();
     
     if (!selectedChild?.id) {
-      alert('⚠️ No child selected. Please add a child first.');
+      setNotification({ message: '⚠️ No child selected. Please add a child first.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
       return;
     }
 
@@ -124,7 +133,7 @@ export default function DashboardPage() {
           location: eventForm.location,
           type: eventForm.type
         });
-        alert(`✅ Event updated successfully! 📅`);
+        setNotification({ message: `✅ Event updated successfully! 📅`, type: 'success' });
       } else {
         await createUpcomingEvent({
           childId: selectedChild.id,
@@ -134,15 +143,17 @@ export default function DashboardPage() {
           location: eventForm.location,
           type: eventForm.type
         });
-        alert(`✅ Event created successfully! 🎉`);
+        setNotification({ message: `✅ Event created successfully! 🎉`, type: 'success' });
       }
       
       // Refresh the upcoming events list
       await loadDashboardData(selectedChild.id);
       closeEventModal();
+      setTimeout(() => setNotification(null), 5000);
     } catch (error: any) {
       console.error('Error saving event:', error);
-      alert(`❌ Failed to save event: ${error.message || 'Unknown error occurred'}`);
+      setNotification({ message: `❌ Failed to save event: ${error.message || 'Unknown error occurred'}`, type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
     } finally {
       setSavingEvent(false);
     }
@@ -156,6 +167,19 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <div className="flex-1 ml-64">
+          {/* Notification Banner */}
+          {notification && (
+            <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
+              notification.type === 'success' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-red-500 text-white'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span>{notification.message}</span>
+              </div>
+            </div>
+          )}
+
           {/* Main Content Area */}
           <main className="p-6">
             {/* Child Overview Card */}

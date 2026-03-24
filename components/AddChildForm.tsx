@@ -31,10 +31,14 @@ export default function AddChildForm() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [childId, setChildId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{type: string, message: string} | null>(null);
+  const [maxDate, setMaxDate] = useState<string>('');
 
   useEffect(() => {
     if (currentUser) {
       checkIfChildExists();
+      // Set max date to today for date picker validation
+      const today = new Date().toISOString().split('T')[0];
+      setMaxDate(today);
     }
   }, [currentUser]);
 
@@ -97,8 +101,30 @@ export default function AddChildForm() {
       return;
     }
     
+    if (formData.name.trim().length < 2) {
+      showNotification('error', '⚠️ Validation Error: Child\'s name must be at least 2 characters long');
+      return;
+    }
+    
     if (!formData.dateOfBirth) {
       showNotification('error', '⚠️ Validation Error: Date of birth is required');
+      return;
+    }
+
+    // Validate date is not in the future
+    const selectedDate = new Date(formData.dateOfBirth);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      showNotification('error', '⚠️ Invalid Date: Date of birth cannot be in the future. Please select a valid date.');
+      return;
+    }
+    
+    // Validate notes length
+    if (formData.notes && formData.notes.length > 500) {
+      showNotification('error', '⚠️ Validation Error: Special notes cannot exceed 500 characters. Please shorten your message.');
       return;
     }
 
@@ -245,6 +271,11 @@ export default function AddChildForm() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         placeholder="Enter your child's magical name ✨"
                       />
+                      {formData.name && formData.name.trim().length < 2 && (
+                        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                          <span>⚠️</span> Name must be at least 2 characters long
+                        </p>
+                      )}
                     </div>
                     
                     <div>
@@ -257,9 +288,15 @@ export default function AddChildForm() {
                         name="dateOfBirth"
                         value={formData.dateOfBirth}
                         onChange={handleChange}
+                        max={maxDate}
                         required
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                       />
+                      {!formData.dateOfBirth && (
+                        <p className="text-gray-500 text-xs mt-1">
+                          📅 Required - Your child's birth date
+                        </p>
+                      )}
                     </div>
                     
                     <div>
@@ -279,7 +316,7 @@ export default function AddChildForm() {
                     
                     <div>
                       <label htmlFor="developmentalAge" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
-                        <span>📏</span> Developmental Age
+                        <span>📏</span> Developmental Age <span className="text-gray-400 text-sm">(Optional)</span>
                       </label>
                       <input
                         type="text"
@@ -290,11 +327,14 @@ export default function AddChildForm() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         placeholder="e.g., 2 years 3 months 🌟"
                       />
+                      <p className="text-gray-500 text-xs mt-1">
+                        💡 If different from chronological age
+                      </p>
                     </div>
                     
                     <div className="md:col-span-2">
                       <label htmlFor="lastMilestone" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
-                        <span>🏆</span> Last Achieved Milestone
+                        <span>🏆</span> Last Achieved Milestone <span className="text-gray-400 text-sm">(Optional)</span>
                       </label>
                       <input
                         type="text"
@@ -305,11 +345,14 @@ export default function AddChildForm() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         placeholder="e.g., First steps, First words, High five! 🎉"
                       />
+                      <p className="text-gray-500 text-xs mt-1">
+                        🌟 Recent achievements your child has reached
+                      </p>
                     </div>
                     
                     <div className="md:col-span-2">
                       <label htmlFor="notes" className="block text-gray-700 font-medium mb-2 flex items-center gap-2">
-                        <span>📝</span> Special Notes
+                        <span>💕</span> Special Notes <span className="text-gray-400 text-sm">(Optional)</span>
                       </label>
                       <textarea
                         id="notes"
@@ -320,6 +363,14 @@ export default function AddChildForm() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-sky-200 focus:border-sky-400 transition-all text-lg"
                         placeholder="Tell us something special about your child... 💕"
                       />
+                      <p className="text-gray-500 text-xs mt-1">
+                        📝 Any additional information you'd like to share (max 500 characters)
+                      </p>
+                      {formData.notes && formData.notes.length > 500 && (
+                        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                          <span>⚠️</span> Notes exceed 500 characters ({formData.notes.length}/500)
+                        </p>
+                      )}
                     </div>
                   </div>
                   

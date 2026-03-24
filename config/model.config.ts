@@ -27,7 +27,7 @@ export const MODEL_CONFIG = {
 // Type definitions for model responses
 export interface ModelPrediction {
   confidence: number
-  prediction: 'likely' | 'unlikely' | 'uncertain'
+  prediction: 'healthy' | 'downsyndrome'
   features: {
     facialFeatures: number[]
     probability: number

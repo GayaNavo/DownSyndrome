@@ -35,9 +35,11 @@ export default function ProgressPage() {
   const [timePeriod, setTimePeriod] = useState<'7days' | '30days' | '6months' | 'alltime'>('30days')
   const [loading, setLoading] = useState(true)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false)
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null)
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -54,6 +56,15 @@ export default function ProgressPage() {
 
   const closeReportModal = () => {
     setShowReportModal(false);
+  };
+
+  // Functions to manage milestones modal
+  const openMilestoneModal = () => {
+    setShowMilestoneModal(true);
+  };
+
+  const closeMilestoneModal = () => {
+    setShowMilestoneModal(false);
   };
 
   // Functions to manage events
@@ -92,7 +103,8 @@ export default function ProgressPage() {
     e.preventDefault();
     
     if (!selectedChild?.id) {
-      alert('No child selected');
+      setNotification({ message: '⚠️ No child selected', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
       return;
     }
 
@@ -107,6 +119,7 @@ export default function ProgressPage() {
           location: eventForm.location,
           type: eventForm.type
         });
+        setNotification({ message: `✅ Event updated successfully! 📅`, type: 'success' });
       } else {
         await createUpcomingEvent({
           childId: selectedChild.id,
@@ -116,14 +129,17 @@ export default function ProgressPage() {
           location: eventForm.location,
           type: eventForm.type
         });
+        setNotification({ message: `✅ Event created successfully! 🎉`, type: 'success' });
       }
       
       // Refresh events
       await loadEvents();
       closeEventModal();
+      setTimeout(() => setNotification(null), 5000);
     } catch (error) {
       console.error('Error saving event:', error);
-      alert('Failed to save event. Please try again.');
+      setNotification({ message: '❌ Failed to save event. Please try again.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -132,10 +148,13 @@ export default function ProgressPage() {
     
     try {
       await deleteUpcomingEvent(eventId);
+      setNotification({ message: '✅ Event deleted successfully!', type: 'success' });
+      setTimeout(() => setNotification(null), 5000);
       await loadEvents();
     } catch (error) {
       console.error('Error deleting event:', error);
-      alert('Failed to delete event. Please try again.');
+      setNotification({ message: '❌ Failed to delete event. Please try again.', type: 'error' });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -359,6 +378,19 @@ export default function ProgressPage() {
 
         {/* Main Content */}
         <div className="flex-1 ml-64">
+          {/* Notification Banner */}
+          {notification && (
+            <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
+              notification.type === 'success' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-red-500 text-white'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span>{notification.message}</span>
+              </div>
+            </div>
+          )}
+
           {/* Main Content Area */}
           <main className="p-6">
           {/* Page Banner Image */}
@@ -764,8 +796,11 @@ export default function ProgressPage() {
                 )}
               </div>
               <a
-                href="/dashboard/milestones"
-                className="text-sky-600 hover:text-sky-700 font-bold inline-flex items-center gap-2 mt-4 text-lg"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openMilestoneModal();
+                }}
+                className="text-sky-600 hover:text-sky-700 font-bold inline-flex items-center gap-2 mt-4 text-lg cursor-pointer"
               >
                 <span>🏆</span> View All Milestones →
               </a>
@@ -1127,6 +1162,87 @@ export default function ProgressPage() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* All Milestones Modal */}
+      {showMilestoneModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-3xl">🏆</span> All Milestones
+                </h3>
+                <button 
+                  onClick={closeMilestoneModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {milestones.length > 0 ? (
+                  milestones.map((milestone) => (
+                    <div 
+                      key={milestone.id} 
+                      className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-mint-50 rounded-2xl border-2 border-white hover:shadow-lg transition-all"
+                    >
+                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg">
+                        <span className="text-2xl">✓</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-gray-900 text-lg mb-1">{milestone.title}</h4>
+                            {milestone.description && (
+                              <p className="text-gray-600 text-sm mb-2">{milestone.description}</p>
+                            )}
+                            {milestone.category && (
+                              <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-sky-100 to-mint-100 text-sky-800 border border-sky-200">
+                                📋 {milestone.category.charAt(0).toUpperCase() + milestone.category.slice(1)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                              📅 {milestone.achievedAt.toDate().toLocaleDateString('en-US', { 
+                                weekday: 'short',
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-mint-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-5xl">🏆</span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">No Milestones Yet!</h4>
+                    <p className="text-gray-600">Start tracking your child's amazing achievements! 🌟</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-200 flex justify-between items-center">
+                <p className="text-sm text-gray-500">
+                  📊 Total: {milestones.length} milestone{milestones.length !== 1 ? 's' : ''} recorded
+                </p>
+                <button
+                  onClick={closeMilestoneModal}
+                  className="px-6 py-3 bg-gradient-to-r from-sky-400 to-mint-400 text-white rounded-2xl hover:from-sky-500 hover:to-mint-500 transition-all font-bold shadow-lg"
+                >
+                  Close ✨
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
