@@ -73,9 +73,15 @@ export class FileUploadUtils {
     category: string = 'other'
   ): Promise<UploadResult> {
     try {
+      console.log('=== Starting Upload ===')
+      console.log('File:', file.name, file.type, file.size)
+      console.log('Child ID:', childId)
+      console.log('Category:', category)
+      
       // Validate file
       const validation = this.validateFile(file)
       if (!validation.valid) {
+        console.error('Validation failed:', validation.error)
         return {
           success: false,
           error: validation.error
@@ -85,11 +91,17 @@ export class FileUploadUtils {
       // Create file path: documents/{childId}/{category}/{timestamp}_{filename}
       const timestamp = Date.now()
       const filePath = `documents/${childId}/${category}/${timestamp}_${file.name}`
+      console.log('Upload path:', filePath)
+      
       const storageRef = ref(getStorageInstance(), filePath)
 
       // Upload file
+      console.log('Uploading to Firebase Storage...')
       const snapshot = await uploadBytes(storageRef, file)
+      console.log('Upload successful, getting download URL...')
+      
       const downloadURL = await getDownloadURL(snapshot.ref)
+      console.log('Download URL obtained:', downloadURL.substring(0, 50) + '...')
 
       return {
         success: true,
@@ -98,8 +110,12 @@ export class FileUploadUtils {
         fileSize: this.formatFileSize(file.size),
         fileType: this.getFileTypeFromMimeType(file.type)
       }
-    } catch (error) {
-      console.error('Upload error:', error)
+    } catch (error: any) {
+      console.error('❌ Upload Error Details:')
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
+      console.error('Full error:', error)
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Upload failed'

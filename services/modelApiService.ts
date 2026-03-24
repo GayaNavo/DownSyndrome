@@ -19,6 +19,9 @@ export const analyzeImage = async (
   imageBase64: string
 ): Promise<AnalysisResponse> => {
   try {
+    console.log('🤖 Sending image to Flask API...');
+    console.log('API Endpoint:', MODEL_CONFIG.API_ENDPOINT);
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), MODEL_CONFIG.TIMEOUT);
 
@@ -34,22 +37,37 @@ export const analyzeImage = async (
 
     clearTimeout(timeoutId);
 
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
       const errorData: ModelErrorResponse = await response.json();
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
     const data: ModelPrediction = await response.json();
+    console.log('✅ AI Analysis successful:', data.prediction);
 
     return {
       success: true,
       data,
     };
   } catch (error: any) {
-    console.error('Model API Error:', error);
+    console.error('❌ Model API Error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to analyze image';
+    
+    if (error.name === 'AbortError') {
+      errorMessage = 'Request timed out. The AI model took too long to respond.';
+    } else if (error.message?.includes('Failed to fetch')) {
+      errorMessage = 'Cannot connect to AI model server. Make sure it\'s running on http://localhost:5000';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
     return {
       success: false,
-      error: error.message || 'Failed to analyze image',
+      error: errorMessage,
     };
   }
 };
