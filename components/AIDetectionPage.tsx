@@ -24,6 +24,7 @@ export default function AIDetectionPage() {
   const [isImageAnalyzing, setIsImageAnalyzing] = useState(false)
   const [imageAnalysisResult, setImageAnalysisResult] = useState<ModelPrediction | null>(null)
   const [modelStatus, setModelStatus] = useState<'checking' | 'online' | 'offline'>('checking')
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
   const { currentUser: user } = useAuth()
   const sdqTrackerRef = useRef<any>(null)
 
@@ -171,6 +172,7 @@ export default function AIDetectionPage() {
       if (result.success) {
         alert(result.message)
         setAnalysisResults({ ...sdqResults, aiPrediction: aiResults })
+        setHistoryRefreshKey(prev => prev + 1) // Trigger history refresh
       } else {
         alert(result.message || '❌ Failed to save analysis results')
       }
@@ -472,7 +474,7 @@ export default function AIDetectionPage() {
 
             {/* Analysis Results History */}
             <div className="mt-12">
-              <AnalysisResultsHistory />
+              <AnalysisResultsHistory refreshKey={historyRefreshKey} />
             </div>
           </main>
         </div>

@@ -8,9 +8,10 @@ import { getChildrenByParent } from '@/lib/firebase/firestore';
 
 interface AnalysisResultsHistoryProps {
   childId?: string; // Optional prop to specify a child, if not provided, uses current user's child
+  refreshKey?: number; // Increment to trigger a data refresh
 }
 
-const AnalysisResultsHistory: React.FC<AnalysisResultsHistoryProps> = ({ childId }) => {
+const AnalysisResultsHistory: React.FC<AnalysisResultsHistoryProps> = ({ childId, refreshKey }) => {
   const [results, setResults] = useState<AnalysisResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,16 +34,20 @@ const AnalysisResultsHistory: React.FC<AnalysisResultsHistoryProps> = ({ childId
         }
         
         if (finalChildId) {
+          console.log('Fetching analysis results for childId:', finalChildId);
           const response = await getAnalysisResultsByChild(finalChildId);
+          console.log('Analysis results response:', response);
           if (response.success && response.data) {
             setResults(response.data);
           } else {
             setResults([]);
             if (response.error) {
               console.error('Error fetching analysis results:', response.error);
+              setError(`Failed to load: ${response.error?.message || response.message}`);
             }
           }
         } else {
+          console.warn('No childId found for user:', user?.uid);
           setResults([]);
         }
       } catch (err) {
@@ -54,7 +59,7 @@ const AnalysisResultsHistory: React.FC<AnalysisResultsHistoryProps> = ({ childId
     };
 
     fetchResults();
-  }, [childId, user]);
+  }, [childId, user, refreshKey]);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {

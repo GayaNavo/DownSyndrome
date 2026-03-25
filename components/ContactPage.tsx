@@ -11,6 +11,8 @@ export default function ContactPage() {
     subject: '',
     message: '',
   })
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [submittedName, setSubmittedName] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -21,9 +23,9 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
     console.log('Form submitted:', formData)
-    alert('Thank you for your message! We will get back to you soon.')
+    setSubmittedName(formData.name)
+    setShowSuccessPopup(true)
     setFormData({
       name: '',
       email: '',
@@ -31,6 +33,10 @@ export default function ContactPage() {
       subject: '',
       message: '',
     })
+  }
+
+  const handleClosePopup = () => {
+    setShowSuccessPopup(false)
   }
 
   const contactMethods = [
@@ -56,6 +62,65 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-lavender-50 via-white to-sky-50">
+      {/* Success Popup Modal */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={handleClosePopup}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-auto animate-in fade-in zoom-in duration-300 border-4 border-sky-100">
+            {/* Close button */}
+            <button
+              onClick={handleClosePopup}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-all text-lg font-bold"
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            {/* Icon */}
+            <div className="flex justify-center mb-5">
+              <div className="w-20 h-20 bg-gradient-to-br from-sky-400 to-mint-400 rounded-full flex items-center justify-center shadow-lg shadow-sky-200">
+                <span className="text-4xl">✉️</span>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Message Sent! 🎉
+              </h3>
+              <p className="text-gray-600 mb-1">
+                Thank you, <span className="font-semibold text-sky-600">{submittedName}</span>!
+              </p>
+              <p className="text-gray-500 text-sm mb-6">
+                We've received your message and will get back to you as soon as possible. Our team typically responds within 1–2 business days.
+              </p>
+
+              {/* Info box */}
+              <div className="bg-gradient-to-r from-sky-50 to-mint-50 rounded-2xl p-4 mb-6 border border-sky-100 text-left">
+                <p className="text-sm text-gray-600 flex items-start gap-2">
+                  <span className="text-sky-500 mt-0.5">💡</span>
+                  <span>In the meantime, check our <strong>FAQ</strong> section below — your question might already be answered there!</span>
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleClosePopup}
+                  className="flex-1 bg-gradient-to-r from-sky-500 to-mint-500 text-white py-3 px-6 rounded-xl font-bold hover:from-sky-600 hover:to-mint-600 transition-all shadow-lg shadow-sky-200 transform hover:scale-[1.02]"
+                >
+                  Got it! 👍
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <AppHeader />
       {/* Hero Section */}
       <section className="relative h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-lavender-400 via-sky-400 to-mint-400">
