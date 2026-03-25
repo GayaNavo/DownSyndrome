@@ -23,6 +23,7 @@ export const COLLECTIONS = {
   APPOINTMENTS: 'appointments',
   HEALTH_DATA: 'health_data',
   UPCOMING_EVENTS: 'upcoming_events',
+  RECOMMENDATIONS: 'recommendations',
 } as const
 
 // User data structure
@@ -122,6 +123,54 @@ export interface UpcomingEvent {
   location?: string
   createdAt: Timestamp
   updatedAt: Timestamp
+}
+
+// Recommendation data structure
+export interface RecommendationData {
+  id?: string
+  childId: string
+  title: string
+  description: string
+  category: 'therapy' | 'developmental' | 'behavioral' | 'medical' | 'educational' | 'social'
+  priority: 'high' | 'medium' | 'low'
+  status: 'active' | 'completed' | 'dismissed'
+  sourceData: {
+    childAge: number
+    growthAnalysis?: {
+      height?: number
+      weight?: number
+      developmentalAge?: string
+      milestones?: string[]
+    }
+    predictionAnalysis?: {
+      confidence: number
+      prediction: 'healthy' | 'downsyndrome'
+      features?: number[]
+    }
+    sdqAnalysis?: {
+      emotional: number
+      conduct: number
+      hyperactivity: number
+      peer: number
+      prosocial: number
+      totalDifficulty: number
+      percentage: number
+      interpretation: string
+    }
+  }
+  aiGeneratedContent: {
+    fullResponse: string
+    keyPoints: string[]
+    actionableItems: string[]
+    resources?: string[]
+  }
+  generatedAt: Timestamp
+  expiresAt?: Timestamp
+  completedAt?: Timestamp
+  notes?: string
+  parentFeedback?: string
+  createdAt?: Timestamp
+  updatedAt?: Timestamp
 }
 
 // ============ USER OPERATIONS ============
@@ -675,5 +724,76 @@ export const getRecentEventsByChild = async (childId: string): Promise<UpcomingE
     })
     .filter(event => event.date.toMillis() >= oneWeekAgoTimestamp.toMillis() && event.date.toMillis() <= now.toMillis())
     .sort((a, b) => b.date.toMillis() - a.date.toMillis())
+}
+
+// ============ RECOMMENDATION OPERATIONS ============
+
+/**
+ * Create a new recommendation document
+ */
+export const createRecommendationDocument = async (
+  recommendationData: Omit<RecommendationData, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const recommendationsRef = collection(ensureDb(), COLLECTIONS.RECOMMENDATIONS)
+  const now = Timestamp.now()
+  const docRef = await addDoc(recommendationsRef, {
+    ...recommendationData,
+    createdAt: now,
+    updatedAt: now,
+  })
+  
+  return docRef.id
+}
+
+/**
+ * Get recommendations for a child
+ */
+export const getRecommendationsByChild = async (childId: string): Promise<RecommendationData[]> => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const recommendationsRef = collection(ensureDb(), COLLECTIONS.RECOMMENDATIONS)
+  const q = query(recommendationsRef, where('childId', '==', childId), orderBy('createdAt', 'desc'))
+  const querySnapshot = await getDocs(q)
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  } as RecommendationData))
+}
+
+/**
+ * Update recommendation document
+ */
+export const updateRecommendationDocument = async (
+  recommendationId: string, 
+  updates: Partial<RecommendationData>
+): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const recommendationRef = doc(ensureDb(), COLLECTIONS.RECOMMENDATIONS, recommendationId)
+  await updateDoc(recommendationRef, {
+    ...updates,
+    updatedAt: Timestamp.now(),
+  })
+}
+
+/**
+ * Delete recommendation document
+ */
+export const deleteRecommendationDocument = async (recommendationId: string): Promise<void> => {
+  if (typeof window === 'undefined') {
+    throw new Error('This function can only be called on the client side')
+  }
+
+  const recommendationRef = doc(ensureDb(), COLLECTIONS.RECOMMENDATIONS, recommendationId)
+  await deleteDoc(recommendationRef)
 }
 

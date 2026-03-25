@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
 import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData, getProgressByChild, ProgressData, UpcomingEvent, createUpcomingEvent, updateUpcomingEvent, deleteUpcomingEvent, getUpcomingEventsByChild } from '@/lib/firebase/firestore'
+import AIRecommendations from './AIRecommendations'
+import { AnalysisResult } from '@/models/AnalysisResult'
 import { Timestamp } from 'firebase/firestore'
 
 const eventTypeEmojis: Record<string, string> = {
@@ -40,6 +42,7 @@ export default function ProgressPage() {
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null)
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [latestAnalysis, setLatestAnalysis] = useState<AnalysisResult | null>(null)
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -216,6 +219,17 @@ export default function ProgressPage() {
         setProgressData(progressData);
         setUpcomingEvents(eventsData);
       });
+      
+      // Load latest SDQ analysis from localStorage
+      const savedAnalysis = localStorage.getItem(`sdq_analysis_${selectedChild.id}`)
+      if (savedAnalysis) {
+        try {
+          const parsed = JSON.parse(savedAnalysis)
+          setLatestAnalysis(parsed)
+        } catch (e) {
+          console.error('Error parsing saved analysis:', e)
+        }
+      }
     }
   }, [selectedChild]);
 
@@ -805,6 +819,41 @@ export default function ProgressPage() {
                 <span>🏆</span> View All Milestones →
               </a>
             </div>
+          </div>
+
+          {/* AI Recommendations Section */}
+          <div className="mt-8 mb-8">
+            <AIRecommendations
+              child={selectedChild}
+              sdqScores={latestAnalysis?.sdqScores ? {
+                emotional: latestAnalysis.sdqScores.emotional,
+                conduct: latestAnalysis.sdqScores.conduct,
+                hyperactivity: latestAnalysis.sdqScores.hyperactivity,
+                peer: latestAnalysis.sdqScores.peer,
+                prosocial: latestAnalysis.sdqScores.prosocial,
+                totalDifficulty: latestAnalysis.totalDifficulty,
+                percentage: latestAnalysis.percentage,
+                interpretation: latestAnalysis.interpretation,
+              } : undefined}
+              predictionAnalysis={latestAnalysis?.aiPrediction ? {
+                confidence: latestAnalysis.aiPrediction.confidence,
+                prediction: latestAnalysis.aiPrediction.prediction,
+                features: latestAnalysis.aiPrediction.features?.facialFeatures,
+              } : undefined}
+              growthAnalysis={healthData.length > 0 ? {
+                height: healthData[healthData.length - 1].height,
+                weight: healthData[healthData.length - 1].weight,
+                developmentalAge: selectedChild.developmentalAge,
+                milestones: milestones.map(m => m.title),
+              } : {
+                developmentalAge: selectedChild.developmentalAge,
+                milestones: milestones.map(m => m.title),
+              }}
+              onRecommendationGenerated={() => {
+                setNotification({ message: '✅ New AI recommendations generated!', type: 'success' })
+                setTimeout(() => setNotification(null), 5000)
+              }}
+            />
           </div>
 
           {/* Upcoming Events Section */}
