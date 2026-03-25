@@ -1,0 +1,12 @@
+# Flask API Dependencies
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# Image Processing
+Pillow>=10.0.0
+
+# YOLOv8 (optional - for real model inference)
+ultralytics>=8.0.0
+
+# Numerical processing
+numpy>=1.24.0
