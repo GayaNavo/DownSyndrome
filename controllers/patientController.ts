@@ -1,6 +1,7 @@
 import { Patient } from '../models/Patient';
 import { PatientService } from '../services/patientService';
 import { BaseController } from './BaseController';
+import { ServiceResponse } from '../services/patientService';
 
 export class PatientController extends BaseController<Patient> {
   private patientService: PatientService;
@@ -10,7 +11,7 @@ export class PatientController extends BaseController<Patient> {
     this.patientService = new PatientService();
   }
 
-  async getAll(): Promise<Patient[]> {
+  async getAll(): Promise<ServiceResponse<Patient[]>> {
     try {
       return await this.patientService.getAllPatients();
     } catch (error) {
@@ -18,7 +19,7 @@ export class PatientController extends BaseController<Patient> {
     }
   }
 
-  async getById(id: string): Promise<Patient | null> {
+  async getById(id: string): Promise<ServiceResponse<Patient | null>> {
     try {
       return await this.patientService.getPatientById(id);
     } catch (error) {
@@ -26,7 +27,7 @@ export class PatientController extends BaseController<Patient> {
     }
   }
 
-  async create(data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient> {
+  async create(data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResponse<Patient>> {
     try {
       return await this.patientService.createPatient(data);
     } catch (error) {
@@ -34,7 +35,7 @@ export class PatientController extends BaseController<Patient> {
     }
   }
 
-  async update(id: string, data: Partial<Patient>): Promise<Patient | null> {
+  async update(id: string, data: Partial<Patient>): Promise<ServiceResponse<Patient | null>> {
     try {
       return await this.patientService.updatePatient(id, data);
     } catch (error) {
@@ -42,7 +43,7 @@ export class PatientController extends BaseController<Patient> {
     }
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string): Promise<ServiceResponse<void>> {
     try {
       return await this.patientService.deletePatient(id);
     } catch (error) {

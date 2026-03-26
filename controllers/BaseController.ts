@@ -1,4 +1,6 @@
 // Base Controller Class
+import { ServiceResponse } from '../services/patientService';
+
 export abstract class BaseController<T> {
   protected modelName: string;
 
@@ -6,11 +8,11 @@ export abstract class BaseController<T> {
     this.modelName = modelName;
   }
 
-  abstract getAll(): Promise<T[]>;
-  abstract getById(id: string): Promise<T | null>;
-  abstract create(data: Omit<T, 'id' | 'createdAt' | 'updatedAt'>): Promise<T>;
-  abstract update(id: string, data: Partial<T>): Promise<T | null>;
-  abstract delete(id: string): Promise<boolean>;
+  abstract getAll(): Promise<ServiceResponse<T[]>>;
+  abstract getById(id: string): Promise<ServiceResponse<T | null>>;
+  abstract create(data: Omit<T, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResponse<T>>;
+  abstract update(id: string, data: Partial<T>): Promise<ServiceResponse<T | null>>;
+  abstract delete(id: string): Promise<ServiceResponse<void>>;
 
   protected handleError(error: unknown, operation: string): never {
     console.error(`${this.modelName} Controller Error - ${operation}:`, error);

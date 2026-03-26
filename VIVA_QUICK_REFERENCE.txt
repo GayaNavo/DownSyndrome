@@ -1,0 +1,204 @@
+================================================================================
+           BACKEND TESTING DEMO - VIVA PRESENTATION CARD
+================================================================================
+
+PROJECT: Down Syndrome Detection Application
+DATE: March 26, 2026
+
+
+--------------------------------------------------------------------------------
+                         QUICK DEMO COMMANDS
+--------------------------------------------------------------------------------
+
+1️⃣ RUN ALL TYPESCRIPT TESTS
+   
+   cd DownSyndrome
+   npm test
+   
+   ✅ Expected: 27 tests pass in <1 second
+
+
+2️⃣ SHOW COVERAGE REPORT
+   
+   npm run test:coverage
+   
+   ✅ Expected: 89% statement coverage
+
+
+3️⃣ OPEN INTERACTIVE HTML REPORT
+   
+   npm run test:html
+   start coverage/index.html
+   
+   ✅ Shows color-coded coverage by file
+
+
+4️⃣ RUN FLASK API TESTS
+   
+   cd flask-api
+   C:\Python312\python.exe -m pytest test_app.py -v
+   
+   ✅ Expected: 17 tests pass
+
+
+5️⃣ WATCH MODE (AUTO-RELOAD)
+   
+   npm run test:watch
+   
+   ✅ Tests re-run on file changes
+
+--------------------------------------------------------------------------------
+                         KEY STATISTICS
+--------------------------------------------------------------------------------
+
+TOTAL TESTS:        44 automated tests
+PASS RATE:          100% (44/44)
+CODE COVERAGE:      89% overall
+EXECUTION TIME:     <2 seconds full suite
+
+BREAKDOWN:
+├── TypeScript Backend: 27 tests (Jest)
+│   ├── Models: 6 tests
+│   ├── Services: 13 tests
+│   └── Controllers: 8 tests
+└── Flask API: 17 tests (Pytest)
+    ├── Health: 4 tests
+    ├── Root: 4 tests
+    ├── Prediction: 5 tests
+    └── Mock: 4 tests
+
+COVERAGE METRICS:
+┌─────────────┬─────────┬──────────┬──────────┐
+│ Component   │ Stmt    │ Branch   │ Function │
+├─────────────┼─────────┼──────────┼──────────┤
+│ Controllers │ 88.57%  │ 88.88%   │ 100%     │
+│ Models      │ 100%    │ 100%     │ 100%     │
+│ Services    │ 88.09%  │ 100%     │ 100%     │
+│ TOTAL       │ 89.02%  │ 93.33%   │ 100%     │
+└─────────────┴─────────┴──────────┴──────────┘
+
+--------------------------------------------------------------------------------
+                         TALKING POINTS
+--------------------------------------------------------------------------------
+
+✅ PROFESSIONAL TESTING INFRASTRUCTURE
+   "Industry-standard testing with Jest and Pytest"
+
+✅ COMPREHENSIVE COVERAGE
+   "Testing all CRUD operations, error handling, and edge cases"
+
+✅ HIGH QUALITY METRICS
+   "89% code coverage exceeds industry standard of 80%"
+
+✅ FAST EXECUTION
+   "Full test suite runs in under 2 seconds"
+
+✅ REAL-WORLD APPLICATION
+   "Medical application requires high reliability"
+
+✅ MAINTAINABLE CODE
+   "Well-organized tests following FIRST principles"
+
+--------------------------------------------------------------------------------
+                         TEST FILES CREATED
+--------------------------------------------------------------------------------
+
+📁 __tests__/models/Patient.test.ts          - Model validation (6 tests)
+📁 __tests__/services/patientService.test.ts - Business logic (13 tests)
+📁 __tests__/controllers/patientController.test.ts - Request handling (8 tests)
+📁 flask-api/test_app.py                     - REST API endpoints (17 tests)
+
+📄 BACKEND_TESTING_GUIDE.md    - Complete testing documentation
+📄 TEST_SUMMARY.md             - Quick reference guide
+📄 VIVA_TEST_PRESENTATION.md   - Full presentation document
+📄 VIVA_DEMO_GUIDE.md          - Step-by-step demo instructions
+📄 coverage/index.html         - Interactive HTML report
+
+--------------------------------------------------------------------------------
+                         WHAT TO SHOW IN VIVA
+--------------------------------------------------------------------------------
+
+OPTION A: LIVE DEMO (RECOMMENDED)
+   1. Run: npm test                    [30 sec]
+   2. Show coverage: npm run coverage  [30 sec]
+   3. Open HTML report                 [2 min]
+   4. Run Flask tests                  [1 min]
+   
+OPTION B: SCREENSHOTS
+   - Test execution output
+   - Coverage metrics table
+   - HTML report main page
+   - Detailed file coverage
+   - Flask test results
+
+OPTION C: PRINTED DOCUMENTATION
+   - This summary card
+   - VIVA_TEST_PRESENTATION.md
+   - HTML report printed as PDF
+
+--------------------------------------------------------------------------------
+                         EXAMINER EXPECTATIONS
+--------------------------------------------------------------------------------
+
+EXAMINERS WANT TO SEE:
+✓ You understand WHY testing is important
+✓ You know HOW to write effective tests
+✓ You can INTERPRET coverage metrics
+✓ You understand TESTING BEST PRACTICES
+✓ You can DEMONSTRATE working tests
+
+BE PREPARED TO EXPLAIN:
+• Difference between unit and integration tests
+• Why we mock dependencies
+• What each coverage metric means
+• How tests improve code quality
+• Real-world benefits of testing
+
+--------------------------------------------------------------------------------
+                         TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+IF TESTS FAIL:
+→ Run: npm install
+→ Then: npm test
+
+IF COVERAGE MISSING:
+→ Run: npm run test:html
+
+IF FLASK TESTS FAIL:
+→ Run: pip install pytest flask-cors
+
+IF BROWSER DOESN'T OPEN:
+→ Manually open: coverage/index.html in Chrome/Firefox
+
+--------------------------------------------------------------------------------
+                         BACKUP PLAN
+--------------------------------------------------------------------------------
+
+HAVE READY:
+□ Screenshots of successful test runs
+□ Video recording of test execution
+□ Printed coverage reports
+□ PDF version of HTML report
+□ All documentation files
+
+LOCATION: viva-backup/ folder
+
+--------------------------------------------------------------------------------
+                         CONTACT INFO
+--------------------------------------------------------------------------------
+
+Project Repository: e:\SLIIT\Year 3\FYP\Code\DownSyndrome
+Documentation Folder: /docs/
+Coverage Report: /coverage/index.html
+
+================================================================================
+                    GOOD LUCK WITH YOUR VIVA! 🎓✨
+================================================================================
+
+Remember: You've built a professional-grade testing suite.
+Show it with confidence and explain your decisions clearly.
+
+YOU'VE GOT THIS! 💪
+
+================================================================================
