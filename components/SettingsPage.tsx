@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
 import AppHeader from './AppHeader';
+import WhimsicalBackground from './WhimsicalBackground';
 import { 
   getUserDocument, 
   updateUserDocument, 
@@ -129,7 +130,8 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+      <div className="flex flex-col min-h-screen bg-whimsical relative">
+        <WhimsicalBackground />
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="settings" />
@@ -145,7 +147,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="settings" />

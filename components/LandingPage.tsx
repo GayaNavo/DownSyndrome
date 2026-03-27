@@ -2,10 +2,12 @@
 
 import Logo from './Logo'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-mint-50">
+    <div className="min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-sky-400 via-sky-500 to-mint-400">
@@ -111,7 +113,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-gradient-to-b from-white via-sky-50 to-mint-50 relative overflow-hidden">
+      <section id="features" className="py-24 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-sunshine-200/30 rounded-full blur-2xl"></div>
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-lavender-200/30 rounded-full blur-2xl"></div>

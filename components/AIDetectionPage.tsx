@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 import AnalysisResultsHistory from './AnalysisResultsHistory'
 import SDQTracker, { type SDQTrackerHandle } from './SDQTracker'
 import { useAuth } from '@/contexts/AuthContext'
@@ -185,7 +186,8 @@ export default function AIDetectionPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         {/* Sidebar */}

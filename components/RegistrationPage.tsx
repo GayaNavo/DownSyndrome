@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from './Logo'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegistrationPage() {
@@ -70,7 +71,8 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-mint-50 via-white to-lavender-50">
+    <div className="min-h-screen flex flex-col bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         {/* Left Panel - Image */}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -61,7 +62,8 @@ export default function ContactPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-lavender-50 via-white to-sky-50">
+    <div className="min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       {/* Success Popup Modal */}
       {showSuccessPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -123,7 +125,7 @@ export default function ContactPage() {
       )}
       <AppHeader />
       {/* Hero Section */}
-      <section className="relative h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-lavender-400 via-sky-400 to-mint-400">
+      <section className="relative h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-400 via-lavender-400 to-mint-400">
         {/* Floating decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-20 w-16 h-16 bg-white/20 rounded-full animate-float"></div>
@@ -144,7 +146,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20">
+      <section className="py-20 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Information */}
@@ -302,7 +304,7 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-sky-50">
+      <section className="py-20 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-5xl mb-4 block">❓</span>

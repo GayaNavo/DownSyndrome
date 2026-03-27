@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 import { 
   getChildDocument, 
   ChildData, 
@@ -368,7 +369,8 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+      <div className="flex min-h-screen bg-whimsical relative">
+        <WhimsicalBackground />
         <DashboardSidebar activePage="documents" />
         <div className="flex-1 ml-64">
           <main className="p-6">
@@ -385,7 +387,8 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="documents" />

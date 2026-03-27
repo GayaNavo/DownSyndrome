@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
 import AppHeader from './AppHeader';
+import WhimsicalBackground from './WhimsicalBackground';
 import { getUserDocument, updateUserDocument, UserData } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -146,7 +147,8 @@ export default function ParentProfile() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+      <div className="flex flex-col min-h-screen bg-whimsical relative">
+        <WhimsicalBackground />
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="profile" />
@@ -164,7 +166,8 @@ export default function ParentProfile() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="profile" />

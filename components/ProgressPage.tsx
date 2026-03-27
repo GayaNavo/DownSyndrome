@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from './DashboardSidebar'
 import AppHeader from './AppHeader'
+import WhimsicalBackground from './WhimsicalBackground'
 import { getChildDocument, ChildData, getMilestonesByChild, MilestoneData, getHealthDataByChild, HealthData, getProgressByChild, ProgressData, UpcomingEvent, createUpcomingEvent, updateUpcomingEvent, deleteUpcomingEvent, getUpcomingEventsByChild } from '@/lib/firebase/firestore'
 import AIRecommendations from './AIRecommendations'
 import { AnalysisResult } from '@/models/AnalysisResult'
@@ -344,7 +345,8 @@ export default function ProgressPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+      <div className="flex flex-col min-h-screen bg-whimsical relative">
+        <WhimsicalBackground />
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="progress" />
@@ -363,7 +365,8 @@ export default function ProgressPage() {
 
   if (!selectedChild) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+      <div className="flex flex-col min-h-screen bg-whimsical relative">
+        <WhimsicalBackground />
         <AppHeader />
         <div className="flex flex-1">
           <DashboardSidebar activePage="progress" />
@@ -384,7 +387,8 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         {/* Sidebar */}

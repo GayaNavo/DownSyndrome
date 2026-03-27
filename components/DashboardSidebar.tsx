@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Logo from './Logo'
+import WhimsicalBackground from './WhimsicalBackground'
 
 interface SidebarProps {
   activePage?: string
@@ -120,18 +121,13 @@ export default function DashboardSidebar({ activePage = 'dashboard' }: SidebarPr
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-50">
-      {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <span className="text-lg font-bold text-gray-900 leading-tight">Down Syndrome Care</span>
-        </div>
+    <aside className="fixed left-0 top-[64px] h-[calc(100vh-64px)] w-64 bg-white/95 backdrop-blur-sm border-r border-gray-200 flex flex-col z-50">
+      {/* Whimsical background behind sidebar */}
+      <div className="absolute inset-0 pointer-events-none -z-10">
+        <WhimsicalBackground />
       </div>
+      {/* Logo */}
+
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

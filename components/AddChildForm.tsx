@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from './DashboardSidebar';
 import AppHeader from './AppHeader';
+import WhimsicalBackground from './WhimsicalBackground';
 import { createChildDocument, ChildData, getChildDocument, updateChildDocument } from '@/lib/firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 
@@ -206,7 +207,8 @@ export default function AddChildForm() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-50 via-white to-mint-50">
+    <div className="flex flex-col min-h-screen bg-whimsical relative">
+      <WhimsicalBackground />
       <AppHeader />
       <div className="flex flex-1">
         <DashboardSidebar activePage="children" />
