@@ -168,6 +168,11 @@ export default function AIRecommendations({
   }, [child.id])
 
   const loadRecommendations = async () => {
+    if (!child?.id) {
+      setError('Missing child ID');
+      return;
+    }
+
     setLoading(true)
     setError(null)
     try {
@@ -185,6 +190,11 @@ export default function AIRecommendations({
   }
 
   const generateRecommendations = async () => {
+    if (!child?.id) {
+      setError('Missing child ID');
+      return;
+    }
+
     setGenerating(true)
     setError(null)
     try {

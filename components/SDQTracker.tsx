@@ -82,7 +82,7 @@ export interface SDQTrackerHandle {
   getResults: () => Results | null
 }
 
-const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerHandle>) => {
+const SDQTracker = forwardRef<SDQTrackerHandle>((props: Record<string, unknown>, ref: Ref<SDQTrackerHandle>) => {
   const [answers, setAnswers] = useState<Answers>({})
   const [results, setResults] = useState<Results | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<number[]>([])
@@ -114,7 +114,7 @@ const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerH
   }
 
   const calculateScore = () => {
-    let scores: Scores = { emotional: 0, conduct: 0, hyperactivity: 0, peer: 0, prosocial: 0 }
+    const scores: Scores = { emotional: 0, conduct: 0, hyperactivity: 0, peer: 0, prosocial: 0 }
 
     questions.forEach((q) => {
       let val = answers[q.id] || 0
@@ -323,5 +323,7 @@ const SDQTracker = forwardRef<SDQTrackerHandle>((props: {}, ref: Ref<SDQTrackerH
     </div>
   )
 })
+
+SDQTracker.displayName = 'SDQTracker'
 
 export default SDQTracker

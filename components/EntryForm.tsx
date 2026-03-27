@@ -157,7 +157,7 @@ export default function EntryForm() {
         });
         
         // Build success message based on what was entered
-        let measurements = [];
+        const measurements: string[] = [];
         if (formData.weight) measurements.push(`weight ${formData.weight}kg`);
         if (formData.height) measurements.push(`height ${formData.height}cm`);
         if (formData.sleepingHours) measurements.push(`${formData.sleepingHours}h sleep`);

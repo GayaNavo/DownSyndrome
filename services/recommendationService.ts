@@ -13,6 +13,7 @@ import {
   RecommendationModel,
   RecommendationPriority,
 } from '../models/Recommendation';
+import { Timestamp } from 'firebase/firestore';
 import {
   createRecommendationDocument,
   getRecommendationsByChild,
@@ -181,8 +182,9 @@ Format your response with clear headings and bullet points for easy reading by p
       status: recommendation.status,
       sourceData: recommendation.sourceData,
       aiGeneratedContent: recommendation.aiGeneratedContent,
-      generatedAt: recommendation.generatedAt,
-      expiresAt: recommendation.expiresAt,
+      generatedAt: Timestamp.fromDate(recommendation.generatedAt),
+      expiresAt: recommendation.expiresAt ? Timestamp.fromDate(recommendation.expiresAt) : undefined,
+      completedAt: recommendation.completedAt ? Timestamp.fromDate(recommendation.completedAt) : undefined,
       notes: recommendation.notes,
       parentFeedback: recommendation.parentFeedback,
     };
@@ -246,7 +248,7 @@ Format your response with clear headings and bullet points for easy reading by p
     try {
       await updateRecommendationDocument(recommendationId, {
         status: 'completed',
-        completedAt: new Date(),
+        completedAt: Timestamp.now(),
         notes: notes,
       });
       return true;
