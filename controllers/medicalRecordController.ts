@@ -18,6 +18,14 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     }
   }
 
+  async getAllData(): Promise<MedicalRecord[]> {
+    const response = await this.getAll();
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch all medical records');
+    }
+    return response.data || [];
+  }
+
   async getById(id: string): Promise<ServiceResponse<MedicalRecord | null>> {
     try {
       return await this.medicalRecordService.getRecordById(id);
