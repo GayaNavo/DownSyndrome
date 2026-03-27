@@ -1,5 +1,5 @@
 import { MedicalRecord } from '../models/MedicalRecord';
-import { MedicalRecordService } from '../services/medicalRecordService';
+import { MedicalRecordService, ServiceResponse } from '../services/medicalRecordService';
 import { BaseController } from './BaseController';
 
 export class MedicalRecordController extends BaseController<MedicalRecord> {
@@ -10,7 +10,7 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     this.medicalRecordService = new MedicalRecordService();
   }
 
-  async getAll(): Promise<MedicalRecord[]> {
+  async getAll(): Promise<ServiceResponse<MedicalRecord[]>> {
     try {
       return await this.medicalRecordService.getAllRecords();
     } catch (error) {
@@ -18,7 +18,7 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     }
   }
 
-  async getById(id: string): Promise<MedicalRecord | null> {
+  async getById(id: string): Promise<ServiceResponse<MedicalRecord | null>> {
     try {
       return await this.medicalRecordService.getRecordById(id);
     } catch (error) {
@@ -26,7 +26,7 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     }
   }
 
-  async create(data: Omit<MedicalRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<MedicalRecord> {
+  async create(data: Omit<MedicalRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<ServiceResponse<MedicalRecord>> {
     try {
       return await this.medicalRecordService.createRecord(data);
     } catch (error) {
@@ -34,7 +34,7 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     }
   }
 
-  async update(id: string, data: Partial<MedicalRecord>): Promise<MedicalRecord | null> {
+  async update(id: string, data: Partial<MedicalRecord>): Promise<ServiceResponse<MedicalRecord | null>> {
     try {
       return await this.medicalRecordService.updateRecord(id, data);
     } catch (error) {
@@ -42,7 +42,7 @@ export class MedicalRecordController extends BaseController<MedicalRecord> {
     }
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string): Promise<ServiceResponse<void>> {
     try {
       return await this.medicalRecordService.deleteRecord(id);
     } catch (error) {
