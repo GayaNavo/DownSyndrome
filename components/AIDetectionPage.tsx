@@ -9,7 +9,7 @@ import SDQTracker, { type SDQTrackerHandle } from './SDQTracker'
 import { useAuth } from '@/contexts/AuthContext'
 import { getChildrenByParent } from '@/lib/firebase/firestore'
 import { createAnalysisResult } from '@/services/analysisResultService'
-import { analyzeImage, checkModelHealth } from '@/services/modelApiService'
+import { analyzeImage, checkModelHealth, checkModelHealthWithRetry } from '@/services/modelApiService'
 import { AnalysisResultModel } from '@/models/AnalysisResult'
 import { ModelPrediction } from '@/config/model.config'
 
@@ -29,13 +29,22 @@ export default function AIDetectionPage() {
   const { currentUser: user } = useAuth()
   const sdqTrackerRef = useRef<any>(null)
 
-  // Check model health on component mount
+  // Check model health on component mount and auto-retry for temporary outages
   useEffect(() => {
+    let isActive = true
+
     const checkHealth = async () => {
-      const isHealthy = await checkModelHealth()
+      setModelStatus('checking')
+      const isHealthy = await checkModelHealthWithRetry(12, 2500)
+      if (!isActive) return
       setModelStatus(isHealthy ? 'online' : 'offline')
     }
+
     checkHealth()
+
+    return () => {
+      isActive = false
+    }
   }, [])
 
   // Analyze image immediately after upload

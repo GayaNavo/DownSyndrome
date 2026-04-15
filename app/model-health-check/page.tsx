@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { checkModelHealth } from '@/services/modelApiService'
+import { checkModelHealth, checkModelHealthWithRetry } from '@/services/modelApiService'
 import { MODEL_CONFIG } from '@/config/model.config'
 
 export default function ModelHealthCheck() {
@@ -10,6 +10,9 @@ export default function ModelHealthCheck() {
 
   useEffect(() => {
     checkHealth()
+
+    const interval = setInterval(checkHealth, 10000)
+    return () => clearInterval(interval)
   }, [])
 
   const checkHealth = async () => {
@@ -19,14 +22,14 @@ export default function ModelHealthCheck() {
     try {
       console.log('Checking health at:', MODEL_CONFIG.API_ENDPOINT.replace('/predict', '/health'))
       
-      const isHealthy = await checkModelHealth()
+      const isHealthy = await checkModelHealthWithRetry(6, 2000)
       
       if (isHealthy) {
         setHealth('healthy')
         setDetails('✅ AI Model is online and responding!')
       } else {
         setHealth('offline')
-        setDetails('❌ AI Model responded with error')
+        setDetails('❌ AI Model is offline or unreachable. Retrying automatically every 10s.')
       }
     } catch (error: any) {
       setHealth('offline')

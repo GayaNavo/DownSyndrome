@@ -73,9 +73,13 @@ export default function DashboardHeader({ title = 'Dashboard' }: { title?: strin
 
         {/* User Profile */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            {currentUser?.photoURL ? (
-              <img src={currentUser.photoURL} alt={displayName} className="w-10 h-10 rounded-full" />
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+            {userData?.photoURL || currentUser?.photoURL ? (
+              <img 
+                src={userData?.photoURL || currentUser?.photoURL} 
+                alt={displayName} 
+                className="w-full h-full object-cover rounded-full" 
+              />
             ) : (
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

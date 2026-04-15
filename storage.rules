@@ -54,9 +54,17 @@ service firebase.storage {
       allow delete: if isSignedIn() && isParentOfChild(childId);
     }
     
-    // Profile pictures
+    // Profile pictures (old structure)
     // Path structure: profile_pictures/{userId}/{filename}
     match /profile_pictures/{userId}/{fileName} {
+      allow write: if isSignedIn() && userId == getUserId();
+      allow read: if isSignedIn();
+      allow delete: if isSignedIn() && userId == getUserId();
+    }
+    
+    // Profile pictures (new structure - used by ParentProfile.tsx)
+    // Path structure: profiles/{userId}/{filename}
+    match /profiles/{userId}/{fileName} {
       allow write: if isSignedIn() && userId == getUserId();
       allow read: if isSignedIn();
       allow delete: if isSignedIn() && userId == getUserId();

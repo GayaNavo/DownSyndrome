@@ -89,3 +89,18 @@ export const checkModelHealth = async (): Promise<boolean> => {
     return false;
   }
 };
+
+export const checkModelHealthWithRetry = async (
+  maxAttempts = 6,
+  delayMs = 2000
+): Promise<boolean> => {
+  let attempt = 0
+  while (attempt < maxAttempts) {
+    if (await checkModelHealth()) {
+      return true
+    }
+    attempt += 1
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
+  }
+  return false
+};
