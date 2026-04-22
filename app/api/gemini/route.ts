@@ -18,7 +18,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, imageBase64 } = await request.json();
+    const { prompt, imageBase64, systemInstruction } = await request.json();
 
     // Validate prompt
     if (!prompt || typeof prompt !== 'string') {
@@ -51,7 +51,24 @@ export async function POST(request: NextRequest) {
     console.log('🤖 Using model:', modelName);
     console.log('🔑 API Key first 20 chars:', apiKey.substring(0, 20));
     
-    const model = genAI.getGenerativeModel({ model: modelName });
+    // Configure model with better generation parameters and optional system instruction
+    const modelConfig: any = {
+      model: modelName,
+      generationConfig: {
+        temperature: 0.8,        // Higher = more creative/varied responses
+        topP: 0.95,             // Nucleus sampling for diverse but coherent output
+        topK: 40,               // Consider top 40 tokens for variety
+        maxOutputTokens: 4096,  // Allow longer, more detailed responses
+      },
+    };
+
+    // Add system instruction if provided (for professional clinical guidance)
+    if (systemInstruction && typeof systemInstruction === 'string') {
+      modelConfig.systemInstruction = systemInstruction;
+      console.log('📋 System instruction provided');
+    }
+    
+    const model = genAI.getGenerativeModel(modelConfig);
 
     let result;
     

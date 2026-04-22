@@ -45,9 +45,10 @@ export class RecommendationService {
     try {
       // Build comprehensive prompt for Gemini AI
       const prompt = this.buildAIPrompt(input);
+      const systemInstruction = this.buildSystemInstruction();
       
-      // Call Gemini AI
-      const aiResponse = await GeminiService.generateText(prompt);
+      // Call Gemini AI with system instruction
+      const aiResponse = await GeminiService.generateText(prompt, systemInstruction);
       
       if (!aiResponse.success || !aiResponse.response) {
         return {
@@ -105,68 +106,147 @@ export class RecommendationService {
   }
 
   /**
+   * Builds the system instruction that sets Gemini's persona and clinical guidelines
+   */
+  private static buildSystemInstruction(): string {
+    return `You are a Developmental Pediatric Specialist specializing in Trisomy 21 (Down syndrome). 
+
+CORE DIRECTIVES:
+1. ANALYZE GROWTH: Always evaluate Height and Weight using DS-specific growth charts (e.g., CDC/Zemel or UK-WHO DSMIG). Do not use typical growth standards. 
+2. INTERPRET SDQ: Recognize that high "Prosocial" scores are common strengths in DS. For "Hyperactivity" or "Conduct," provide calming/focusing strategies rather than behavioral labels.
+3. SLEEP VIGILANCE: If sleep is <11 hours or fragmented, prioritize checking for Obstructive Sleep Apnea (OSA) due to hypotonia.
+4. CONFIDENTIAL LEVELS: Treat "Confidential Level 1-3" as support intensity (1=Mild/Consultative, 2=Moderate/Active Therapy, 3=High/Complex).
+5. FORMATTING: Use clear Markdown with headers. Be empathetic but medically grounded.
+6. MANDATORY DISCLAIMER: Include a note that this is educational and requires pediatrician validation.
+
+CLINICAL GUIDELINES FOR DOWN SYNDROME:
+- Hypotonia (low muscle tone) affects motor development and airway
+- Higher risk of sleep apnea (50-100% prevalence)
+- Speech delays are common due to oral-motor differences
+- Visual learning strengths - use visual schedules and cues
+- Social strengths - leverage prosocial behavior for teaching
+- Growth should be tracked on DS-specific charts, not typical charts
+- Early intervention is critical and highly effective
+
+TONE: Professional, empathetic, evidence-based, actionable, and supportive.`;
+  }
+
+  /**
    * Builds a comprehensive prompt for Gemini AI based on child data
    */
   private static buildAIPrompt(input: CreateRecommendationInput): string {
     const { childAge, growthAnalysis, predictionAnalysis, sdqAnalysis } = input;
-    
-    let prompt = `You are an expert pediatric developmental specialist focusing on Down Syndrome care. 
-Generate personalized, evidence-based recommendations for a ${childAge}-year-old child with Down Syndrome.
 
-`;
+    // Build profile data section
+    let profileData = `Generate a developmental recommendation report for the following child profile:
 
-    // Add growth analysis context
+### PROFILE DATA:
+- Age: ${childAge} years old`;
+
+    // Add growth metrics
     if (growthAnalysis) {
-      prompt += `## GROWTH & DEVELOPMENT PROFILE\n`;
-      if (growthAnalysis.height) prompt += `- Height: ${growthAnalysis.height} cm\n`;
-      if (growthAnalysis.weight) prompt += `- Weight: ${growthAnalysis.weight} kg\n`;
-      if (growthAnalysis.developmentalAge) prompt += `- Developmental Age: ${growthAnalysis.developmentalAge}\n`;
-      if (growthAnalysis.milestones && growthAnalysis.milestones.length > 0) {
-        prompt += `- Recent Milestones: ${growthAnalysis.milestones.join(', ')}\n`;
+      const heightStr = growthAnalysis.height ? `${growthAnalysis.height} cm` : 'N/A';
+      const weightStr = growthAnalysis.weight ? `${growthAnalysis.weight} kg` : 'N/A';
+      profileData += `\n- Current Growth: Height ${heightStr}, Weight ${weightStr}`;
+      
+      if (growthAnalysis.developmentalAge) {
+        profileData += `\n- Developmental Age: ${growthAnalysis.developmentalAge} years`;
       }
-      prompt += `\n`;
+      
+      if (growthAnalysis.milestones && growthAnalysis.milestones.length > 0) {
+        profileData += `\n- Achieved Milestones: ${growthAnalysis.milestones.join(', ')}`;
+      }
+    } else {
+      profileData += `\n- Current Growth: Height N/A, Weight N/A`;
     }
 
-    // Add prediction analysis context
-    if (predictionAnalysis) {
-      prompt += `## AI PREDICTION ANALYSIS\n`;
-      prompt += `- Prediction: ${predictionAnalysis.prediction}\n`;
-      prompt += `- Confidence: ${(predictionAnalysis.confidence * 100).toFixed(1)}%\n`;
-      prompt += `\n`;
-    }
-
-    // Add SDQ analysis context
+    // Determine support level based on SDQ
+    let supportLevel = 'Level 1 - Mild/Consultative';
     if (sdqAnalysis) {
-      prompt += `## SDQ (STRENGTHS & DIFFICULTIES QUESTIONNAIRE) RESULTS\n`;
-      prompt += `- Emotional Symptoms: ${sdqAnalysis.emotional}/10\n`;
-      prompt += `- Conduct Problems: ${sdqAnalysis.conduct}/10\n`;
-      prompt += `- Hyperactivity/Inattention: ${sdqAnalysis.hyperactivity}/10\n`;
-      prompt += `- Peer Relationship Issues: ${sdqAnalysis.peer}/10\n`;
-      prompt += `- Prosocial Behavior: ${sdqAnalysis.prosocial}/10 (higher is better)\n`;
-      prompt += `- Total Difficulties Score: ${sdqAnalysis.totalDifficulty}/40\n`;
-      prompt += `- Overall Percentage: ${sdqAnalysis.percentage.toFixed(1)}%\n`;
-      prompt += `- Interpretation: ${sdqAnalysis.interpretation}\n\n`;
+      const totalScore = sdqAnalysis.totalDifficulty;
+      if (totalScore >= 20) {
+        supportLevel = 'Level 3 - High/Complex (intensive support needed)';
+      } else if (totalScore >= 13) {
+        supportLevel = 'Level 2 - Moderate/Active Therapy';
+      }
     }
 
-    prompt += `## INSTRUCTIONS
-Please provide 3-5 specific, actionable recommendations that address:
+    // Add SDQ results
+    if (sdqAnalysis) {
+      profileData += `\n- SDQ Assessment:`;
+      profileData += `\n  • Emotional Symptoms: ${sdqAnalysis.emotional}/10`;
+      profileData += `\n  • Conduct Problems: ${sdqAnalysis.conduct}/10`;
+      profileData += `\n  • Hyperactivity/Inattention: ${sdqAnalysis.hyperactivity}/10`;
+      profileData += `\n  • Peer Relationship Issues: ${sdqAnalysis.peer}/10`;
+      profileData += `\n  • Prosocial Behavior: ${sdqAnalysis.prosocial}/10`;
+      profileData += `\n  • Total Difficulties: ${sdqAnalysis.totalDifficulty}/40`;
+      profileData += `\n  • Clinical Interpretation: ${sdqAnalysis.interpretation}`;
+    } else {
+      profileData += `\n- SDQ Assessment: Not completed`;
+    }
 
-1. **Immediate priorities** based on the SDQ results and any concerning areas
-2. **Developmental activities** appropriate for a ${childAge}-year-old with Down Syndrome
-3. **Therapy suggestions** (speech, occupational, physical) if relevant
-4. **Home-based strategies** parents can implement
-5. **When to seek professional help** - specific warning signs
+    // Add prediction confidence if available
+    if (predictionAnalysis) {
+      profileData += `\n- AI Screening Confidence: ${(predictionAnalysis.confidence * 100).toFixed(1)}%`;
+    }
 
-For each recommendation:
-- Give it a clear, specific title
-- Provide detailed explanation
-- List 2-3 concrete action steps
-- Indicate priority level (High/Medium/Low)
-- Suggest frequency (daily/weekly/monthly)
+    profileData += `\n- Support/Confidential Level: ${supportLevel}`;
 
-Format your response with clear headings and bullet points for easy reading by parents.`;
+    // Add required output sections
+    profileData += `
 
-    return prompt;
+### REQUIRED OUTPUT SECTIONS:
+
+1. **Physical Growth Analysis**: 
+   - How they track on DS-specific growth charts (not typical charts)
+   - Compare to DS growth percentiles (Zemel/CDC DS charts)
+   - Note if height/weight are proportional
+   - Provide nutritional guidance if needed
+
+2. **Motor & Sensory Goals**: 
+   - Provide exactly 3 specific exercises appropriate for their age
+   - Address hypotonia considerations
+   - Include both gross motor and fine motor activities
+   - Specify duration, frequency, and progression markers
+
+3. **Sleep & Respiratory Health**: 
+   - Assess sleep adequacy for their age (DS children need 10-13 hours for ages 3-5)
+   - If sleep <11 hours or fragmented: Address OSA risk due to hypotonia
+   - Provide safe sleep positioning strategies
+   - Recommend sleep study if red flags present
+   - Include calming pre-sleep routine
+
+4. **Social-Emotional Strategy**: 
+   - Leverage SDQ strengths (especially if Prosocial is high)
+   - Address areas of concern with specific strategies
+   - If Hyperactivity/Conduct elevated: Provide calming/focusing exercises (not behavioral labels)
+   - Include peer interaction activities
+   - Suggest emotional regulation techniques
+
+5. **Monthly Action Plan**: 
+   - Provide exactly 3 actionable steps for parents
+   - Include timeline and checkpoints
+   - Specify when to reassess
+   - List warning signs requiring immediate professional attention
+
+### FORMATTING REQUIREMENTS:
+- Use clear Markdown headers (## and ###)
+- Use bullet points and numbered lists
+- Bold key terms and warnings
+- Keep paragraphs concise (2-3 sentences max)
+- Use clinical but accessible language
+- Include specific timelines and measurable goals
+
+### IMPORTANT CLINICAL NOTES:
+- Always reference DS-specific considerations
+- Acknowledge the child's strengths before addressing challenges
+- Provide evidence-based recommendations
+- Include red flags that warrant immediate medical attention
+- Be realistic but hopeful about developmental progress
+
+Please generate the comprehensive developmental recommendation report now:`;
+
+    return profileData;
   }
 
   /**

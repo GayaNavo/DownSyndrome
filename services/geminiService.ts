@@ -39,16 +39,24 @@ export class GeminiService {
    * Generate text response from Gemini AI
    * 
    * @param prompt - The text prompt or question to send to Gemini
+   * @param systemInstruction - Optional system instruction for setting AI persona/rules
    * @returns Promise with generated text response or error
    */
-  static async generateText(prompt: string): Promise<GeminiResponse> {
+  static async generateText(prompt: string, systemInstruction?: string): Promise<GeminiResponse> {
     try {
+      const requestBody: any = { prompt };
+      
+      // Add system instruction if provided
+      if (systemInstruction) {
+        requestBody.systemInstruction = systemInstruction;
+      }
+
       const response = await fetch(this.API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -116,25 +124,76 @@ export class GeminiService {
     condition: string,
     assessmentScores?: Record<string, number>
   ): Promise<GeminiResponse> {
-    let prompt = `Provide personalized, evidence-based therapy recommendations for a ${childAge}-year-old child with ${condition}. `;
+    let prompt = `You are an EXPERT pediatric therapist specializing in ${condition} early intervention. 
+Provide HIGHLY PERSONALIZED, detailed therapy recommendations for a ${childAge}-year-old child.
+
+CRITICAL: Do NOT give generic advice. Tailor EVERY recommendation to the specific child profile below.`;
     
     if (assessmentScores && Object.keys(assessmentScores).length > 0) {
       const scoresText = Object.entries(assessmentScores)
-        .map(([area, score]) => `- ${area}: ${score}/10`)
+        .map(([area, score]) => {
+          const level = score >= 7 ? 'HIGH CONCERN' : score >= 5 ? 'MODERATE CONCERN' : 'STRENGTH AREA';
+          return `- ${area}: ${score}/10 [${level}]`;
+        })
         .join('\n');
       
-      prompt += `\n\nCurrent Assessment Scores:\n${scoresText}\n\n`;
-      prompt += 'Focus on areas with lower scores while maintaining strengths in higher-scoring areas. ';
+      prompt += `\n\n## CURRENT ASSESSMENT PROFILE:\n${scoresText}\n\n`;
+      
+      // Identify areas of concern and strengths
+      const concerns = Object.entries(assessmentScores)
+        .filter(([_, score]) => score >= 5)
+        .map(([area]) => area);
+      
+      const strengths = Object.entries(assessmentScores)
+        .filter(([_, score]) => score < 5)
+        .map(([area]) => area);
+      
+      if (concerns.length > 0) {
+        prompt += `**AREAS NEEDING FOCUS:** ${concerns.join(', ')}\n`;
+        prompt += `These areas show moderate to high concern and require targeted intervention.\n\n`;
+      }
+      
+      if (strengths.length > 0) {
+        prompt += `**EXISTING STRENGTHS:** ${strengths.join(', ')}\n`;
+        prompt += `Build upon these areas while addressing concerns.\n\n`;
+      }
+      
+      prompt += `For each area of concern:\n`;
+      prompt += `- Explain WHY this area needs attention based on the score\n`;
+      prompt += `- Provide 3-5 SPECIFIC activities with step-by-step instructions\n`;
+      prompt += `- Include duration, frequency, and best timing\n`;
+      prompt += `- List materials needed (prefer household items)\n`;
+      prompt += `- Describe what progress looks like\n`;
+      prompt += `- Give warning signs that indicate need for professional help\n\n`;
+    } else {
+      prompt += `\n\nProvide comprehensive therapy guidance covering:\n`;
+      prompt += `- Speech & language development\n`;
+      prompt += `- Fine and gross motor skills\n`;
+      prompt += `- Social-emotional development\n`;
+      prompt += `- Cognitive development\n`;
+      prompt += `- Daily living skills\n\n`;
     }
     
-    prompt += `Please provide:
-1. Specific daily/weekly exercises and activities
-2. Developmental milestones to focus on for this age
-3. Tips for parents to support therapy at home
-4. Warning signs that would indicate need for professional consultation
-5. Encouraging progress indicators to watch for
+    prompt += `## FORMAT REQUIREMENTS:
 
-Format the response clearly with headings and bullet points.`;
+For each recommendation, provide:
+
+1. **Title**: Specific and actionable
+2. **Why This Matters**: Connect to child's profile and developmental science
+3. **Step-by-Step Activities**: 3-5 concrete exercises parents can do TODAY
+4. **Implementation Guide**: When, where, how long, what materials
+5. **Progress Tracking**: What to look for, timeline, milestones
+6. **Red Flags**: When to seek professional support
+
+Make recommendations:
+✅ Age-appropriate for a ${childAge}-year-old
+✅ Evidence-based and research-backed
+✅ Practical for daily home implementation
+✅ Specific with exact activities (not vague suggestions)
+✅ Encouraging but realistic
+
+Avoid generic phrases like "work on speech" - instead provide exact techniques like:
+"Practice 'b' and 'p' sounds for 10 minutes, 3x daily using mirror play. Have child watch your mouth, then their own, making the sounds together. Use words like 'ball,' 'pop,' 'baby.' Celebrate each attempt."`;
 
     return this.generateText(prompt);
   }
